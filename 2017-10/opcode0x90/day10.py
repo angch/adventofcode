@@ -20,9 +20,10 @@ def part1(data, length=256):
         sublist = list(itertools.islice(rope_, i, i + length))
         logging.debug("[%d,%d] sublist: %r" % (i, skip, sublist))
 
-        # reverse the sublist
-        for j, value in zip(
-                reversed([x[0] for x in sublist]), (x[1] for x in sublist)):
+        # unzip the sublist and reverse the index
+        # then re-assign values back to the rope
+        index, values = zip(*sublist)
+        for j, value in zip(reversed(index), values):
             rope[j] = value
 
         # advance the index
@@ -55,11 +56,12 @@ def part2(data):
             rope_ = itertools.cycle(enumerate(rope))
 
             # select the sublist to be reversed
-            sublist = list(itertools.islice(rope_, i, i + length))
+            sublist = tuple(itertools.islice(rope_, i, i + length))
 
-            # reverse the sublist
-            for j, value in zip(
-                    reversed([x[0] for x in sublist]), (x[1] for x in sublist)):
+            # unzip the sublist and reverse the index
+            # then re-assign values back to the rope
+            index, values = zip(*sublist)
+            for j, value in zip(reversed(index), values):
                 rope[j] = value
 
             # advance the index
