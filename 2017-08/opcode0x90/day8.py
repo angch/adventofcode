@@ -70,7 +70,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='AoC 2017-08 Solution')
     parser.add_argument(
-        '--input',
+        'INPUT',
+        nargs='?',
         default="input.txt",
         help='Input file to run the solution with.')
     parser.add_argument(
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
 
-    with open(args.input) as f:
+    with open(args.INPUT) as f:
         data = f.read()
 
     if not args.no_part1:
