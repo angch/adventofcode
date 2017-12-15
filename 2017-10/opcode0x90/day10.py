@@ -13,11 +13,11 @@ def part1(data, length=256):
     i = 0
 
     for length in tape:
-        tape_ = itertools.cycle(enumerate(rope))
+        rope_ = itertools.cycle(enumerate(rope))
 
         # select the sublist to be reversed
         logging.debug("[%d,%d] length: %r" % (i, skip, length))
-        sublist = list(itertools.islice(tape_, i, i + length))
+        sublist = list(itertools.islice(rope_, i, i + length))
         logging.debug("[%d,%d] sublist: %r" % (i, skip, sublist))
 
         # reverse the sublist
@@ -52,10 +52,10 @@ def part2(data):
 
     for _ in range(64):
         for length in tape:
-            tape_ = itertools.cycle(enumerate(rope))
+            rope_ = itertools.cycle(enumerate(rope))
 
             # select the sublist to be reversed
-            sublist = list(itertools.islice(tape_, i, i + length))
+            sublist = list(itertools.islice(rope_, i, i + length))
 
             # reverse the sublist
             for j, value in zip(
