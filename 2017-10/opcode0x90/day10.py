@@ -79,7 +79,7 @@ def part2(data):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='AoC 2017-08 Solution')
+    parser = argparse.ArgumentParser(description='AoC 2017-10 Solution')
     parser.add_argument(
         'INPUT',
         nargs='?',
