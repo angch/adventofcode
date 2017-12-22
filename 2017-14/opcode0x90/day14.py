@@ -127,7 +127,7 @@ if __name__ == '__main__':
     import argparse
     import time
 
-    parser = argparse.ArgumentParser(description='AoC 2015-14 Solution')
+    parser = argparse.ArgumentParser(description='AoC 2017-14 Solution')
     parser.add_argument(
         'INPUT',
         nargs='?',
