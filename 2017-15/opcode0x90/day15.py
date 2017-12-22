@@ -31,6 +31,26 @@ def part2(data):
     return sum(next(a) == next(b) for _ in range(5000000))
 
 
+def part2_numba(data):
+    a, b = data
+    score = 0
+
+    for _ in range(5000000):
+        while True:
+            a = (a * 16807) % 2147483647
+            if not (a % 4):
+                break
+        while True:
+            b = (b * 48271) % 2147483647
+            if not (b % 8):
+                break
+
+        if (a & 0xffff) == (b & 0xffff):
+            score += 1
+
+    return score
+
+
 ###############################################################################
 
 if __name__ == '__main__':
@@ -80,3 +100,15 @@ if __name__ == '__main__':
         result = part2(data_)
         t = time.clock() - start
         print("Part 2: [%.3f] %r = %r" % (t, data_, result))
+
+        try:
+            import numba
+            part2_numba = numba.jit(
+                part2_numba, nopython=True, nogil=True, parallel=True)
+
+            start = time.clock()
+            result = part2_numba(data_)
+            t = time.clock() - start
+            print("Part 2 - Numba: [%.3f] %r = %r" % (t, data_, result))
+        except ImportError:
+            pass
