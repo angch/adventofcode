@@ -71,7 +71,7 @@ def part2(data):
 
     # return the hexadecimal representation of Knot Hash
     return ''.join(
-        hex(c)[2:]
+        format(c, 'x')
         for c in (functools.reduce(operator.xor, chunk)
                   for chunk in grouper(rope, 16)))
 
