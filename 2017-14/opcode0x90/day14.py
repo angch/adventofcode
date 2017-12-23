@@ -139,8 +139,6 @@ if __name__ == '__main__':
         action="store_true",
         help='Turn on verbose logging.')
     parser.add_argument(
-        '-l', '--line', action="store_true", help='Parse input line by line.')
-    parser.add_argument(
         '-1',
         '--no-part1',
         action="store_true",
