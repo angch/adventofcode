@@ -7,6 +7,8 @@ import collections
 
 
 def part1(data):
+    # solution stolen from
+    # https://www.reddit.com/r/adventofcode/comments/7kc0xw/2017_day_17_solutions/drd6kck/
     steps = int(data)
     spinlock = collections.deque([0])
 
