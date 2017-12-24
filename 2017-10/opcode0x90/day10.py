@@ -8,21 +8,20 @@ import operator
 
 def part1(data, length=256):
     rope = list(range(length))
+    ropelen = len(rope)
     tape = [int(x) for x in data.split(',')]
     skip = 0
     i = 0
 
     for length in tape:
-        rope_ = itertools.cycle(enumerate(rope))
-
         # select the sublist to be reversed
-        logging.debug("[%d,%d] length: %r" % (i, skip, length))
-        sublist = list(itertools.islice(rope_, i, i + length))
-        logging.debug("[%d,%d] sublist: %r" % (i, skip, sublist))
+        index = []
+        values = []
+        for j in (x % ropelen for x in range(i, i + length)):
+            index.append(j)
+            values.append(rope[j])
 
-        # unzip the sublist and reverse the index
-        # then re-assign values back to the rope
-        index, values = zip(*sublist)
+        # reverse the index, then re-assign values back to the rope
         for j, value in zip(reversed(index), values):
             rope[j] = value
 
@@ -47,20 +46,21 @@ def part2(data):
         return itertools.zip_longest(*args, fillvalue=fillvalue)
 
     rope = list(range(256))
+    ropelen = len(rope)
     tape = [ord(x) for x in data] + [17, 31, 73, 47, 23]
     skip = 0
     i = 0
 
     for _ in range(64):
         for length in tape:
-            rope_ = itertools.cycle(enumerate(rope))
-
             # select the sublist to be reversed
-            sublist = tuple(itertools.islice(rope_, i, i + length))
+            index = []
+            values = []
+            for j in (x % ropelen for x in range(i, i + length)):
+                index.append(j)
+                values.append(rope[j])
 
-            # unzip the sublist and reverse the index
-            # then re-assign values back to the rope
-            index, values = zip(*sublist)
+            # reverse the index, then re-assign values back to the rope
             for j, value in zip(reversed(index), values):
                 rope[j] = value
 
@@ -71,7 +71,7 @@ def part2(data):
 
     # return the hexadecimal representation of Knot Hash
     return ''.join(
-        hex(c)[2:]
+        format(c, 'x')
         for c in (functools.reduce(operator.xor, chunk)
                   for chunk in grouper(rope, 16)))
 

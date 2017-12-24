@@ -27,7 +27,7 @@ def part1(data):
             # execute the instruction
             register[reg] += int(imm) if op == 'inc' else -int(imm)
 
-    logging.debug("cpu: %r" % register)
+    logging.debug("cpu: %r" % register)w
     return max(register.values())
 
 
