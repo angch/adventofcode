@@ -3,5 +3,19 @@ name = "opcode0x90"
 version = "0.1.0"
 authors = ["opcode0x90 <opcode0x90.nop@gmail.com>"]
 
+[lib]
+name = "aoc"
+path = "src/lib.rs"
+
+[[bin]]
+name = "aoc"
+path = "src/main.rs"
+
+[[bench]]
+name = "bench"
+harness = false
+
 [dependencies]
-time = "0.1.40"
+
+[dev-dependencies]
+criterion = "0.2"
