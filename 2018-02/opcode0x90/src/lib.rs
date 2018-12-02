@@ -20,58 +20,63 @@ pub fn part1(input: &Vec<String>) -> u32 {
         dict
     }
 
-    let (x, y) = input.iter().fold((0, 0), |(a, b), line| {
+    let mut two = 0;
+    let mut three = 0;
+
+    for line in input.into_iter() {
         // compute char frequency map
         let fm = frequency_map(line);
 
         // check if frequency map contains exactly two/three chars
-        let contains_two = fm.values().any(|v| *v == 2);
-        let contains_three = fm.values().any(|v| *v == 3);
+        let mut x = 0;
+        let mut y = 0;
 
-        (
-            if contains_two { a + 1 } else { a },
-            if contains_three { b + 1 } else { b },
-        )
-    });
+        for v in fm.values() {
+            match *v {
+                2 => x = 1,
+                3 => y = 1,
+                _ => (),
+            }
+            // early termination if both condition is already met
+            if x > 0 && y > 0 {
+                break;
+            }
+        }
 
-    x * y
+        two += x;
+        three += y;
+    }
+
+    two * three
 }
 
 pub fn part2(input: &Vec<String>) -> String {
-    /// compute distance between two strings
-    fn distance(a: &str, b: &str) -> usize {
-        let it = a.chars().zip(b.chars());
-
-        // count number of instances where char is different from both strings
-        // given the same iterator position
-        it.filter(|(a, b)| a != b).count()
-    }
-
-    fn common_chars(a: &str, b: &str) -> String {
-        // find common chars between two given strings
-        let chars = a
-            .chars()
-            .zip(b.chars())
-            .filter(|(a, b)| a == b)
-            .map(|(a, _)| a);
-        String::from_iter(chars)
-    }
-
-    // locate pairs of string where distance between them is exactly 1
-    let mut candidates = input
+    input
         .into_iter()
         .tuple_combinations()
-        .filter(|(a, b)| distance(a, b) == 1)
-        .collect::<Vec<_>>();
+        .find_map(|(a, b)| {
+            // find both common and distinct chars
+            let mut same = String::with_capacity(a.len());
+            let mut diff = 0;
 
-    // HACK: there should not be more than one candidate
-    assert_eq!(1, candidates.len());
+            for (a, b) in a.chars().zip(b.chars()) {
+                if a == b {
+                    same.push(a);
+                } else {
+                    diff += 1;
 
-    // find common chars
-    let (a, b) = candidates
-        .pop()
-        .expect("There is no candidate with distance of one!");
-    common_chars(a, b)
+                    // early skipping if diff > 1
+                    if diff > 1 {
+                        break;
+                    }
+                }
+            }
+
+            match diff {
+                1 => Some(same),
+                _ => None,
+            }
+        }).expect("there is no candidate with distance of one!")
 }
 
 pub fn get_input() -> Result<Vec<String>, Box<std::error::Error>> {
