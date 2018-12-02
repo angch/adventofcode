@@ -13,13 +13,22 @@ Result
 ------
 
 ```sh
-$ cargo run; cargo run --release
-    Finished dev [unoptimized + debuginfo] target(s) in 0.23s
-     Running `target/debug/opcode0x90`
-[0.000034712s] part1: 484
-[0.414523288s] part2: 367
-    Finished release [optimized] target(s) in 0.66s
-     Running `target/release/opcode0x90`
-[0.000006167s] part1: 484
-[0.016367217s] part2: 367
+part1: 484
+part2: 367
+```
+
+Benchmark
+---------
+
+```
+$ cargo bench
+part1                   time:   [41.091 ns 41.529 ns 41.978 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+
+part2                   time:   [14.686 ms 16.147 ms 17.870 ms]
+Found 17 outliers among 100 measurements (17.00%)
+  3 (3.00%) high mild
+  14 (14.00%) high severe
 ```

@@ -12,14 +12,27 @@ Compiling and Running
 Result
 ------
 
-```sh
-$ cargo run; cargo run --release
-    Finished dev [unoptimized + debuginfo] target(s) in 0.61s
-     Running `target/debug/opcode0x90`
-[0.008866948s] part1: 7533
-[0.140163926s] part2: mphcuasvrnjzzkbgdtqeoylva
-    Finished release [optimized] target(s) in 0.74s
-     Running `target/release/opcode0x90`
-[0.000327956s] part1: 7533
-[0.002465024s] part2: mphcuasvrnjzzkbgdtqeoylva
+```
+part1: 7533
+part2: mphcuasvrnjzzkbgdtqeoylva
+```
+
+Benchmark
+---------
+
+```
+$ cargo bench
+part1                   time:   [299.36 us 302.91 us 306.38 us]
+Found 29 outliers among 100 measurements (29.00%)
+  8 (8.00%) low severe
+  3 (3.00%) low mild
+  2 (2.00%) high mild
+  16 (16.00%) high severe
+
+part2                   time:   [2.5162 ms 2.5301 ms 2.5477 ms]
+Found 8 outliers among 100 measurements (8.00%)
+  2 (2.00%) low severe
+  2 (2.00%) low mild
+  1 (1.00%) high mild
+  3 (3.00%) high severe
 ```
