@@ -3,7 +3,6 @@ extern crate itertools;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::iter::FromIterator;
 
 use itertools::Itertools;
 
