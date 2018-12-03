@@ -1,0 +1,4 @@
+I wanted to do this in dart.
+But can't load external packages in dart using repl(I use web repl)
+For now just use php.
+Mayb port to dart(and clojure?) later.(Maybe)
