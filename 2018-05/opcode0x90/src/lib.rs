@@ -1,7 +1,11 @@
+extern crate rayon;
+
 use std::collections::HashSet;
 use std::error::Error;
 use std::io::{BufReader, Read};
 use std::iter::FromIterator;
+
+use rayon::prelude::*;
 
 pub fn part1(input: &String) -> usize {
     // simulate polymer reaction
@@ -30,15 +34,12 @@ pub fn part1(input: &String) -> usize {
 }
 
 pub fn part2(input: &String) -> usize {
-    let mut units = HashSet::new();
+    // find out all available units
+    let units: HashSet<char> = HashSet::from_iter(input.chars());
 
     // solve for shortest polymer after deleting units
-    input
-        .chars()
-        .into_iter()
-        // find out all available units
-        .filter(|c| units.insert(c.to_ascii_lowercase()))
-        // only distinct units will be left over
+    units
+        .par_iter()
         .map(|c| {
             // construct a new string with given unit deleted
             let buf = String::from_iter(
