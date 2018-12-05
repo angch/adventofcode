@@ -1,43 +1,33 @@
+extern crate rayon;
+
 use std::collections::HashSet;
 use std::error::Error;
 use std::io::{BufReader, Read};
 use std::iter::FromIterator;
 
+use rayon::prelude::*;
+
 pub fn part1(input: &String) -> usize {
-    let mut result = String::with_capacity(input.len());
-
     // simulate polymer reaction
-    let stop = String::from("!");
-    let mut chars = input.chars().chain(stop.chars()).peekable();
-    let mut backtrack = false;
+    let result = input
+        .chars()
+        .fold(String::with_capacity(input.len()), |mut buf, c| {
+            let tail = buf.chars().last().unwrap_or('!');
 
-    while let (Some(_c), Some(_next)) = (chars.next(), chars.peek()) {
-        let mut c = _c;
-        let mut next = _next;
-
-        if backtrack {
-            // backtrack one character
-            backtrack = false;
-            c = result.pop().unwrap_or('!');
-
-            if c == '!' {
-                // unable to backtrack, already at beginning of string
-                continue;
+            // is this reactive?
+            if c.to_ascii_lowercase() == tail.to_ascii_lowercase()
+                && ((c.is_ascii_lowercase() && tail.is_ascii_uppercase())
+                    || (c.is_ascii_uppercase() && tail.is_ascii_lowercase()))
+            {
+                // reactive! drop the last char from buffer
+                buf.pop();
+            } else {
+                // not reactive, append the char to end of buffer
+                buf.push(c);
             }
-        }
-
-        // is this reactive?
-        if c.to_ascii_lowercase() == next.to_ascii_lowercase()
-            && ((c.is_ascii_lowercase() && next.is_ascii_uppercase())
-                || (c.is_ascii_uppercase() && next.is_ascii_lowercase()))
-        {
-            // react! mark the next iteration for backtracking
-            backtrack = true;
-        } else {
-            // not reactive, copy over to result
-            result.push(c);
-        }
-    }
+            // println!("[{}, {}] {}", tail, c, buf);
+            buf
+        });
 
     // count the remaining units in polymer
     result.len()
@@ -45,25 +35,18 @@ pub fn part1(input: &String) -> usize {
 
 pub fn part2(input: &String) -> usize {
     // find out all available units
-    let mut units = HashSet::new();
-
-    for c in input.chars() {
-        units.insert(c.to_ascii_lowercase());
-    }
+    let units: HashSet<char> = HashSet::from_iter(input.chars());
 
     // solve for shortest polymer after deleting units
     units
-        .into_iter()
+        .par_iter()
         .map(|c| {
-            let buf = String::from_iter(input.chars().filter_map(|x| {
-                if x == c.to_ascii_lowercase() || x == c.to_ascii_uppercase() {
-                    None
-                } else {
-                    Some(x)
-                }
-            }));
-            let result = part1(&buf);
-            result
+            // construct a new string with given unit deleted
+            let buf = String::from_iter(
+                input.matches(|x| !(x == c.to_ascii_lowercase() || x == c.to_ascii_uppercase())),
+            );
+            // run the simulation
+            part1(&buf)
         }).min()
         .expect("there is no solution!")
 }
