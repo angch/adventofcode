@@ -32,3 +32,22 @@ Found 12 outliers among 100 measurements (12.00%)
   5 (5.00%) high mild
   7 (7.00%) high severe
 ```
+
+Take #2
+
+```
+$ cargo bench
+part1                   time:   [475.34 us 477.72 us 480.59 us]
+                        change: [-97.023% -96.961% -96.891%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 10 outliers among 100 measurements (10.00%)
+  5 (5.00%) high mild
+  5 (5.00%) high severe
+
+part2                   time:   [17.547 ms 17.701 ms 17.873 ms]
+                        change: [-96.139% -96.079% -96.021%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+```

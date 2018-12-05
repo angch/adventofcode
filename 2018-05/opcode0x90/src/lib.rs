@@ -2,47 +2,45 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::io::{BufReader, Read};
 use std::iter::FromIterator;
-use std::mem;
 
 pub fn part1(input: &String) -> usize {
-    // make a front and back buffer
-    let mut front = String::from(input.trim());
-    let mut back = String::with_capacity(input.len());
-    let mut dirty = true;
+    let mut result = String::with_capacity(input.len());
 
-    while dirty {
-        // reset dirty flag
-        dirty = false;
+    // simulate polymer reaction
+    let stop = String::from("!");
+    let mut chars = input.chars().chain(stop.chars()).peekable();
+    let mut backtrack = false;
 
-        // simulate polymer reaction
-        let mut prev: char = '!';
-        for c in front.drain(..) {
-            // is this reactive?
-            if prev.to_ascii_lowercase() == c.to_ascii_lowercase()
-                && ((prev.is_ascii_lowercase() && c.is_ascii_uppercase())
-                    || (prev.is_ascii_uppercase() && c.is_ascii_lowercase()))
-            {
-                // react! delete previous char in back buffer
-                back.pop();
+    while let (Some(_c), Some(_next)) = (chars.next(), chars.peek()) {
+        let mut c = _c;
+        let mut next = _next;
 
-                // mark the dirty flag and invalidate prev char
-                dirty |= true;
-                prev = '!';
-            } else {
-                // push the char into back buffer
-                back.push(c);
+        if backtrack {
+            // backtrack one character
+            backtrack = false;
+            c = result.pop().unwrap_or('!');
 
-                // the character will remember this...
-                prev = c;
+            if c == '!' {
+                // unable to backtrack, already at beginning of string
+                continue;
             }
         }
 
-        // swap the front and back buffer
-        mem::swap(&mut front, &mut back);
+        // is this reactive?
+        if c.to_ascii_lowercase() == next.to_ascii_lowercase()
+            && ((c.is_ascii_lowercase() && next.is_ascii_uppercase())
+                || (c.is_ascii_uppercase() && next.is_ascii_lowercase()))
+        {
+            // react! mark the next iteration for backtracking
+            backtrack = true;
+        } else {
+            // not reactive, copy over to result
+            result.push(c);
+        }
     }
 
     // count the remaining units in polymer
-    front.len()
+    result.len()
 }
 
 pub fn part2(input: &String) -> usize {
