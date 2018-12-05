@@ -11,10 +11,7 @@ pub fn part1(input: &String) -> usize {
     let mut chars = input.chars().chain(stop.chars()).peekable();
     let mut backtrack = false;
 
-    while let (Some(_c), Some(_next)) = (chars.next(), chars.peek()) {
-        let mut c = _c;
-        let mut next = _next;
-
+    while let (Some(mut c), Some(next)) = (chars.next(), chars.peek()) {
         if backtrack {
             // backtrack one character
             backtrack = false;
@@ -44,26 +41,22 @@ pub fn part1(input: &String) -> usize {
 }
 
 pub fn part2(input: &String) -> usize {
-    // find out all available units
     let mut units = HashSet::new();
 
-    for c in input.chars() {
-        units.insert(c.to_ascii_lowercase());
-    }
-
     // solve for shortest polymer after deleting units
-    units
+    input
+        .chars()
         .into_iter()
+        // find out all available units
+        .filter(|c| units.insert(c.to_ascii_lowercase()))
+        // only distinct units will be left over
         .map(|c| {
-            let buf = String::from_iter(input.chars().filter_map(|x| {
-                if x == c.to_ascii_lowercase() || x == c.to_ascii_uppercase() {
-                    None
-                } else {
-                    Some(x)
-                }
-            }));
-            let result = part1(&buf);
-            result
+            // construct a new string with given unit deleted
+            let buf = String::from_iter(
+                input.matches(|x| !(x == c.to_ascii_lowercase() || x == c.to_ascii_uppercase())),
+            );
+            // run the simulation
+            part1(&buf)
         }).min()
         .expect("there is no solution!")
 }
