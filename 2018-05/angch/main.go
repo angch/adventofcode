@@ -139,6 +139,64 @@ func foo3(s string) (int, int, string) {
 	return len(best[0]), least, string(leastk + 'a' - 1)
 }
 
+// Both parts, one iter
+// Returns part1_len, part2_len, part2_char
+func foo4(s []byte) (int, int, string) {
+	l := len([]byte(s))
+	best := make([][]byte, 27)
+	lengths := [27]int{}
+	for k := range best {
+		best[k] = make([]byte, l, l)
+	}
+	for _, v := range s {
+		if v < 'A' {
+			continue
+		}
+		lower := v
+		currentIsLower := true
+
+		if v >= 'A' && v <= 'Z' {
+			lower += ('a' - 'A')
+			currentIsLower = false
+		}
+
+		for k2, v2 := range best {
+			if lower-'a' == byte(k2) {
+				continue
+			}
+			if lengths[k2] == 0 {
+				best[k2][0] = v
+				lengths[k2] = 1
+				continue
+			}
+			last := v2[lengths[k2]-1]
+			lastLower := last
+
+			lastIsLower := true
+			if lastLower >= 'A' && lastLower <= 'Z' {
+				lastLower += ('a' - 'A')
+				lastIsLower = false
+			}
+			if lower == lastLower && currentIsLower != lastIsLower {
+				lengths[k2]--
+			} else {
+				best[k2][lengths[k2]] = v
+				lengths[k2]++
+			}
+		}
+	}
+	least := lengths[26]
+	leastk := 0
+	for k, _ := range best {
+		if least > lengths[k] {
+			least = lengths[k]
+			leastk = k
+		}
+	}
+
+	return lengths[26], least, string(leastk + 'a')
+}
+
 func main() {
 	// fmt.Println(foo3("aA"))
 	// fmt.Println(foo3("abBA"))
