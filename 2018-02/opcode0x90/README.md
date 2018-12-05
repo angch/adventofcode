@@ -1,7 +1,7 @@
 2018-02
 =======
 
-Solution for [Advent of Code](https://adventofcode.com/2018) day 1.
+Solution for [Advent of Code](https://adventofcode.com/2018) day 2.
 
 Compiling and Running
 ---------------------
