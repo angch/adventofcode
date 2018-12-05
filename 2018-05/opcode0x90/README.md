@@ -51,3 +51,23 @@ Found 2 outliers among 100 measurements (2.00%)
   1 (1.00%) high mild
   1 (1.00%) high severe
 ```
+
+Take #3: after folding the laundry
+
+```
+$ cargo bench
+part1                   time:   [388.15 us 389.95 us 392.13 us]
+                        change: [-20.603% -19.023% -17.400%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 7 outliers among 100 measurements (7.00%)
+  2 (2.00%) high mild
+  5 (5.00%) high severe
+
+part2                   time:   [20.330 ms 20.351 ms 20.371 ms]
+                        change: [-11.001% -10.373% -9.7182%] (p = 0.00 < 0.05)
+                        Performance has improved.
+Found 11 outliers among 100 measurements (11.00%)
+  3 (3.00%) low mild
+  1 (1.00%) high mild
+  7 (7.00%) high severe
+```

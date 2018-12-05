@@ -4,37 +4,26 @@ use std::io::{BufReader, Read};
 use std::iter::FromIterator;
 
 pub fn part1(input: &String) -> usize {
-    let mut result = String::with_capacity(input.len());
-
     // simulate polymer reaction
-    let stop = String::from("!");
-    let mut chars = input.chars().chain(stop.chars()).peekable();
-    let mut backtrack = false;
+    let result = input
+        .chars()
+        .fold(String::with_capacity(input.len()), |mut buf, c| {
+            let tail = buf.chars().last().unwrap_or('!');
 
-    while let (Some(mut c), Some(next)) = (chars.next(), chars.peek()) {
-        if backtrack {
-            // backtrack one character
-            backtrack = false;
-            c = result.pop().unwrap_or('!');
-
-            if c == '!' {
-                // unable to backtrack, already at beginning of string
-                continue;
+            // is this reactive?
+            if c.to_ascii_lowercase() == tail.to_ascii_lowercase()
+                && ((c.is_ascii_lowercase() && tail.is_ascii_uppercase())
+                    || (c.is_ascii_uppercase() && tail.is_ascii_lowercase()))
+            {
+                // reactive! drop the last char from buffer
+                buf.pop();
+            } else {
+                // not reactive, append the char to end of buffer
+                buf.push(c);
             }
-        }
-
-        // is this reactive?
-        if c.to_ascii_lowercase() == next.to_ascii_lowercase()
-            && ((c.is_ascii_lowercase() && next.is_ascii_uppercase())
-                || (c.is_ascii_uppercase() && next.is_ascii_lowercase()))
-        {
-            // react! mark the next iteration for backtracking
-            backtrack = true;
-        } else {
-            // not reactive, copy over to result
-            result.push(c);
-        }
-    }
+            // println!("[{}, {}] {}", tail, c, buf);
+            buf
+        });
 
     // count the remaining units in polymer
     result.len()
