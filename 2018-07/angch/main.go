@@ -1,34 +1,21 @@
 package main
 
-// WTF ugly
-
 import (
 	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"regexp"
-	"sort"
 )
 
-// MOUBACDEFRGHIJKNPQSTXVWYZL
-// MOUBNYITKXZFHQRJDASGCPEVWL
-// MNOUBYITKXZFHQRJDASGCPEVWL
-
-// 653
-// 894
-// 893
-
 type Node struct {
-	From string
-	To   string
+	From byte
+	To   byte
 }
 
-func findJob(nodes []Node, done map[string]bool, prereq map[string][]string, pending map[string]bool) string {
-	//	smallest := "_"
+func findJob(done map[byte]bool, prereq map[byte][]byte, pending map[byte]bool) byte {
 a:
-	for kk := 'A'; kk <= 'Z'; kk++ {
-		k := string(kk)
+	for k := byte('A'); k <= byte('Z'); k++ {
 		if done[k] {
 			continue
 		}
@@ -44,55 +31,9 @@ a:
 				continue a
 			}
 		}
-		return string(k)
+		return k
 	}
-	return "_"
-}
-
-func findJobOld(nodes []Node, done map[string]bool, prereq map[string][]string, pending map[string]bool) string {
-	smallestFrom := "_"
-	smallestTo := "_"
-a:
-	for _, n := range nodes {
-		if !done[n.From] {
-			if pending[n.From] {
-				continue
-			}
-			for _, f := range prereq[n.From] {
-				if !done[f] {
-					continue a
-				}
-				if pending[f] {
-					continue a
-				}
-			}
-			if smallestFrom > n.From {
-				smallestFrom = n.From
-			}
-		}
-		if !done[n.To] {
-			if pending[n.To] {
-				continue
-			}
-			for _, f := range prereq[n.To] {
-				if !done[f] {
-					continue a
-				}
-				if pending[f] {
-					continue a
-				}
-			}
-			if smallestTo > n.To {
-				smallestTo = n.To
-			}
-		}
-	}
-	//fmt.Println("smallest ", smallestFrom, smallestTo)
-
-	if smallestFrom != "_" {
-		return smallestFrom
-	}
-	return smallestTo
+	return 0
 }
 
 func main() {
@@ -111,75 +52,66 @@ func main() {
 
 	re := regexp.MustCompile((`^Step\s+(\w+) must be finished before step (\w+)`))
 
-	nodes := make([]Node, 0)
-	prereq := make(map[string][]string)
-	availMap := make(map[string]bool)
+	prereq := make(map[byte][]byte)
+	availMap := make(map[byte]bool)
 	dot := false
 	for scanner.Scan() {
 		v := scanner.Text()
 		a := re.FindAllStringSubmatch(v, -1)
-		n := Node{a[0][1], a[0][2]}
-		nodes = append(nodes, n)
-		if prereq[n.To] == nil {
-			prereq[n.To] = make([]string, 0)
+		from, to := byte(a[0][1][0]), byte(a[0][2][0])
+		//nodes = append(nodes, n)
+		if prereq[from] == nil {
+			prereq[from] = make([]byte, 0)
 		}
-		prereq[n.To] = append(prereq[n.To], n.From)
+		prereq[to] = append(prereq[to], from)
 		if dot {
-			fmt.Println(n.From, "->", n.To)
+			fmt.Println(from, "->", to)
 		}
-		availMap[n.From] = true
-		availMap[n.To] = true
+		availMap[from] = true
+		availMap[to] = true
 	}
-	avail := make([]string, len(availMap))
-	i := 0
-	for k := range availMap {
-		avail[i] = k
-		i++
-	}
-	sort.Strings(avail)
 
-	log.Println(nodes)
-	done := make(map[string]bool)
+	//log.Println(nodes)
+	done := make(map[byte]bool)
 	//output := ""
-	pending := make(map[string]bool)
+	pending := make(map[byte]bool)
 	for {
-		job := findJob(nodes, done, prereq, pending)
-		if job == "_" {
+		job := findJob(done, prereq, pending)
+		if job == 0 {
 			break
 		}
 		done[job] = true
-		fmt.Print(job)
+		fmt.Print(string(job))
 	}
 	fmt.Println()
 
 	// Part 2
-	done = make(map[string]bool)
+	done = make(map[byte]bool)
 	workers := make([]int, nworker)
-	workerJob := make([]string, nworker)
+	workerJob := make([]byte, nworker)
 	jobsdone := 0
 	t := 0
 
 	output := ""
-	for t = 0; jobsdone < len(avail); t++ {
+	for t = 0; ; t++ {
 		for k, w := range workers {
 			if w > 0 {
 				workers[k]--
 			}
 			if workers[k] == 0 {
-				if workerJob[k] != "" {
+				if workerJob[k] != 0 {
 					pending[workerJob[k]] = false
 					done[workerJob[k]] = true
-					fmt.Println("t", t, "worker", k, "done", workerJob[k])
-					output = output + workerJob[k]
-					workerJob[k] = ""
-
+					//fmt.Println("t", t, "worker", k, "done", workerJob[k])
+					output = output + string(workerJob[k])
+					workerJob[k] = 0
 					jobsdone++
 				}
 			}
 		}
 		for k, _ := range workers {
 			if workers[k] == 0 {
-				job := findJob(nodes, done, prereq, pending)
+				job := findJob(done, prereq, pending)
 
 				// Sanity check
 				for _, v := range prereq[job] {
@@ -188,30 +120,24 @@ func main() {
 					}
 				}
 
-				if !pending[job] && job != "_" {
-					//done[job] = true
+				if !pending[job] && job != 0 {
 					pending[job] = true
 					workerJob[k] = job
 				} else {
-
-					fmt.Println("t", t, "Worker", k, "nojob", job)
+					//fmt.Println("t", t, "Worker", k, "nojob", job)
 					continue
 				}
-				duration := int(byte(job[0])-'A'+1) + base
-				fmt.Println("t", t, "Worker", k, "job", job, "duration", duration, jobsdone)
+				duration := int(job-'A'+1) + base
+				//fmt.Println("t", t, "Worker", k, "job", job, "duration", duration, jobsdone)
 				workers[k] = duration
 			} else {
-				fmt.Println("t", t, "Worker", k, "doingjob", workerJob[k], workers[k])
+				//fmt.Println("t", t, "Worker", k, "doingjob", workerJob[k], workers[k])
 			}
 		}
-		fmt.Println("t", t, "ends jobsdone", jobsdone, output)
-		if jobsdone == len(avail) {
-			fmt.Println("bre")
+		//fmt.Println("t", t, "ends jobsdone", jobsdone, output)
+		if jobsdone == len(availMap) {
 			break
 		}
 	}
-	//t--
-	//log.Println(t, workers)
-	//t += max
 	fmt.Println(t)
 }
