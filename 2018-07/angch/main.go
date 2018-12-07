@@ -15,13 +15,93 @@ import (
 // MOUBNYITKXZFHQRJDASGCPEVWL
 // MNOUBYITKXZFHQRJDASGCPEVWL
 
+// 653
+// 894
+// 893
+
 type Node struct {
 	From string
 	To   string
 }
 
+func findJob(nodes []Node, done map[string]bool, prereq map[string][]string, pending map[string]bool) string {
+	//	smallest := "_"
+a:
+	for kk := 'A'; kk <= 'Z'; kk++ {
+		k := string(kk)
+		if done[k] {
+			continue
+		}
+		if pending[k] {
+			continue
+		}
+
+		for _, f := range prereq[k] {
+			if !done[f] {
+				continue a
+			}
+			if pending[f] {
+				continue a
+			}
+		}
+		return string(k)
+	}
+	return "_"
+}
+
+func findJobOld(nodes []Node, done map[string]bool, prereq map[string][]string, pending map[string]bool) string {
+	smallestFrom := "_"
+	smallestTo := "_"
+a:
+	for _, n := range nodes {
+		if !done[n.From] {
+			if pending[n.From] {
+				continue
+			}
+			for _, f := range prereq[n.From] {
+				if !done[f] {
+					continue a
+				}
+				if pending[f] {
+					continue a
+				}
+			}
+			if smallestFrom > n.From {
+				smallestFrom = n.From
+			}
+		}
+		if !done[n.To] {
+			if pending[n.To] {
+				continue
+			}
+			for _, f := range prereq[n.To] {
+				if !done[f] {
+					continue a
+				}
+				if pending[f] {
+					continue a
+				}
+			}
+			if smallestTo > n.To {
+				smallestTo = n.To
+			}
+		}
+	}
+	//fmt.Println("smallest ", smallestFrom, smallestTo)
+
+	if smallestFrom != "_" {
+		return smallestFrom
+	}
+	return smallestTo
+}
+
 func main() {
-	file, err := os.Open("input.txt")
+	nworker := 2
+	base := 0
+	fileName := "input2.txt"
+	nworker, base, fileName = 5, 60, "input.txt"
+
+	file, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,90 +140,78 @@ func main() {
 
 	log.Println(nodes)
 	done := make(map[string]bool)
-	output := ""
-
+	//output := ""
+	pending := make(map[string]bool)
 	for {
-		matches := make([]string, 0)
-		smallestFrom := "_"
-		smallestTo := "_"
-		//a:
-		for _, n := range nodes {
-			// if !done[n.From] {
-			// 	continue
-			// }
-			if !done[n.From] {
-				for _, f := range prereq[n.From] {
-					if !done[f] {
-						//log.Println("skip")
-						goto b
+		job := findJob(nodes, done, prereq, pending)
+		if job == "_" {
+			break
+		}
+		done[job] = true
+		fmt.Print(job)
+	}
+	fmt.Println()
+
+	// Part 2
+	done = make(map[string]bool)
+	workers := make([]int, nworker)
+	workerJob := make([]string, nworker)
+	jobsdone := 0
+	t := 0
+
+	output := ""
+	for t = 0; jobsdone < len(avail); t++ {
+		for k, w := range workers {
+			if w > 0 {
+				workers[k]--
+			}
+			if workers[k] == 0 {
+				if workerJob[k] != "" {
+					pending[workerJob[k]] = false
+					done[workerJob[k]] = true
+					fmt.Println("t", t, "worker", k, "done", workerJob[k])
+					output = output + workerJob[k]
+					workerJob[k] = ""
+
+					jobsdone++
+				}
+			}
+		}
+		for k, _ := range workers {
+			if workers[k] == 0 {
+				job := findJob(nodes, done, prereq, pending)
+
+				// Sanity check
+				for _, v := range prereq[job] {
+					if !done[v] {
+						log.Fatal("Having job ", job, " before job ", v, " done")
 					}
 				}
-				if smallestFrom > n.From {
-					smallestFrom = n.From
-				}
-			}
 
-			if !done[n.To] {
-				if smallestTo > n.To {
-					smallestTo = n.To
-				}
-			}
-		b:
-			if done[n.To] {
-				continue
-			}
+				if !pending[job] && job != "_" {
+					//done[job] = true
+					pending[job] = true
+					workerJob[k] = job
+				} else {
 
-			// found it
-			//log.Println("x2", n.From, n.To, done)
-			for _, f := range prereq[n.To] {
-				if !done[f] {
-					//log.Println("skip")
+					fmt.Println("t", t, "Worker", k, "nojob", job)
 					continue
 				}
-			}
-			matches = append(matches, n.To)
-		}
-		//log.Println("Smallest is", smallestFrom)
-		matches = []string{}
-		if len(output) >= len(avail) {
-			log.Fatal(output)
-		}
-
-		sort.Strings(matches)
-		if true {
-			//log.Println(matches)
-			if len(matches) > 0 {
-				//log.Fatal("adf")
-			}
-		}
-		if len(matches) == 0 {
-			//log.Println(done)
-
-			if smallestFrom != "_" {
-				matches = append(matches, smallestFrom)
+				duration := int(byte(job[0])-'A'+1) + base
+				fmt.Println("t", t, "Worker", k, "job", job, "duration", duration, jobsdone)
+				workers[k] = duration
 			} else {
-				for _, n := range nodes {
-					l, r := -1, -1
-					for k, v := range output {
-						if string(v) == n.From {
-							l = k
-						}
-						if string(v) == n.To {
-							r = k
-						}
-					}
-					if l >= r && l != -1 && r != -1 {
-						log.Println("argh, ", n.From, n.To)
-					}
-				}
-				output = output + smallestTo
-				fmt.Println(output)
-				break
-				log.Fatal("no match ", output, len(output), len(nodes), smallestTo)
+				fmt.Println("t", t, "Worker", k, "doingjob", workerJob[k], workers[k])
 			}
 		}
-		output = output + matches[0]
-		done[matches[0]] = true
-		//log.Println("out", matches, output)
+		fmt.Println("t", t, "ends jobsdone", jobsdone, output)
+		if jobsdone == len(avail) {
+			fmt.Println("bre")
+			break
+		}
 	}
+	//t--
+	//log.Println(t, workers)
+	//t += max
+	fmt.Println(t)
 }
