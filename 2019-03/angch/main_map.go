@@ -1,11 +1,11 @@
 /*
-cybus:angch angch$ go build main_faster.go
-cybus:angch angch$ time ./main_faster
+cybus:angch angch$ go build main_map.go
+cybus:angch angch$ time ./main_map
 159 610
 135 410
 2427 27890
 
-real	0m0.925s
+real	0m3.429s
 */
 package main
 
@@ -28,7 +28,7 @@ var directions map[byte][]int = map[byte][]int{
 	'D': []int{0, 1},
 }
 
-func trace(line string, color int8, board []int8, steps []uint32) (int, int) {
+func trace(line string, color int8, board map[int]int8, steps map[int]uint32) (int, int) {
 	ox, oy := max/2, max/2
 	points := strings.Split(line, ",")
 	x, y := ox, oy
@@ -76,8 +76,8 @@ func trace(line string, color int8, board []int8, steps []uint32) (int, int) {
 }
 
 func partboth(one string, two string) (int, int) {
-	board := make([]int8, max*max)
-	steps := make([]uint32, max*max)
+	board := make(map[int]int8, max*max)
+	steps := make(map[int]uint32, max*max)
 
 	// ox, oy := max/2, max/2
 	trace(one, 2, board, steps)
