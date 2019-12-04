@@ -5,24 +5,18 @@ import (
 )
 
 func part1(from, to int) (int, int) {
-
 	count1, count2 := 0, 0
-
 a:
 	for i := from; i <= to; i++ {
-
-		prev := 10
-		adj, adj2 := false, false
-		adjcount := 0
+		prev, adj, adj2, adjcount := 10, 0, 0, 0
 		for k := i; k > 0; k /= 10 {
 			j := k % 10
 			if j == prev {
-				adj = true
+				adj = 1
 				adjcount++
 			} else {
-				if adjcount > 0 && adjcount <= 1 {
-					// log.Println(adjcount)
-					adj2 = true
+				if adjcount == 1 {
+					adj2 = 1
 				}
 				adjcount = 0
 			}
@@ -33,16 +27,10 @@ a:
 			prev = j
 		}
 
-		if adjcount > 0 && adjcount <= 1 {
-			adj2 = true
+		if adjcount == 1 {
+			adj2 = 1
 		}
-
-		if adj {
-			count1++
-		}
-		if adj2 {
-			count2++
-		}
+		count1, count2 = count1+adj, count2+adj2
 	}
 	return count1, count2
 }
