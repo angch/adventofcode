@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -13,10 +14,9 @@ type edge struct {
 	to   string
 }
 
-func parse(i string) []edge {
+func parse(r io.Reader) []edge {
 	e := make([]edge, 0)
-	lines := bytes.NewBufferString(i)
-	scanner := bufio.NewScanner(lines)
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		t := strings.TrimSpace(scanner.Text())
 		split := strings.Split(t, ")")
@@ -36,7 +36,6 @@ func part1(edges []edge) {
 		if !exists {
 			nodes[e.from] = make([]string, 0)
 		}
-
 		nodes[e.from] = append(nodes[e.from], e.to)
 		orbits[e.to] = e.from
 	}
@@ -55,74 +54,56 @@ func part1(edges []edge) {
 	// Not needed
 	indirect := 0
 	for k, _ := range orbits {
-		indirect1 := 0
+		indirect1 := 0 // This one is for debugging
 		o := k
 		for o != root {
 			o = orbits[o]
 			indirect++
 			indirect1++
 		}
-
-		if nodes[k] == nil {
-			// log.Println("n", k)
-			// nodes[k] = make([]string, 0)
-		}
+		// Debugging
 		// log.Println(k, indirect1)
 	}
 	log.Println("Orbits", indirect)
-	// direct := len(edges)
 
 	if orbits["YOU"] == "" || orbits["SAN"] == "" {
+		// Only a test
 		return
 	}
 
 	// Part 2
 	you_path := make([]string, 0)
 	o := orbits["YOU"]
-	count := 0
 	for o != root {
-		// log.Println("o", o)
 		you_path = append(you_path, o)
 		o = orbits[o]
-		count++
-		// if count > 10000 {
-		// 	return
-		// }
 	}
 	log.Println(you_path)
+	o = orbits["SAN"]
 	san_path := make([]string, 0)
-	o, e := orbits["SAN"]
-	// log.Println(orbits)
-	if e == false {
-		log.Fatal("Not exists")
-	}
-	count = 0
 	for o != root {
-		// log.Println("o", o)
 		san_path = append(san_path, o)
 		o = orbits[o]
-		count++
-		if count > 1000000 {
-			return
-		}
 	}
 	log.Println(san_path)
 
+	// We traced from both santa to root, and you to root
+	// Now we backtrace from root to a path that diverges
+	// (We can codegolf this to even less lines, but it gets confusing)
 	i, j := len(you_path)-1, len(san_path)-1
 	for {
-		if you_path[i-1] == san_path[j-1] {
-			i--
-			j--
-		} else {
-			log.Println(i, j, i+j)
-			return
+		if you_path[i-1] != san_path[j-1] {
+			break
 		}
+		i--
+		j--
 	}
+	// Distance of the two paths added:
+	log.Println(i, j, i+j)
 }
 
 func main() {
 	if true {
-		// Part 1
 		test := `COM)B
 		B)C
 		C)D
@@ -134,15 +115,10 @@ func main() {
 		E)J
 		J)K
 		K)L`
-
-		// log.Printf("%+v\n", parse(test))
-		a := parse(test)
-		part1(a)
-
-		// fmt.Println(part1(test))
+		lines := bytes.NewBufferString(test)
+		part1(parse(lines))
 	}
 	if true {
-
 		fileName := "input.txt"
 
 		file, err := os.Open(fileName)
@@ -151,19 +127,6 @@ func main() {
 		}
 		defer file.Close()
 
-		scanner := bufio.NewScanner(file)
-		e := make([]edge, 0)
-		for scanner.Scan() {
-			t := strings.TrimSpace(scanner.Text())
-			split := strings.Split(t, ")")
-			if len(split) > 1 {
-				from, to := split[0], split[1]
-				e = append(e, edge{from: from, to: to})
-			}
-		}
-		part1(e)
-
-		// fmt.Println("Part 1", part1(prog, 1))
-		// fmt.Println("Part 2", part1(prog, 5))
+		part1(parse(file))
 	}
 }
