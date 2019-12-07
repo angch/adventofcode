@@ -24,7 +24,7 @@ func dump(program []int) {
 	fmt.Println()
 }
 
-func part1(prog []int, input <-chan int, output chan<- int) int {
+func IntCodeVM(prog []int, input <-chan int, output chan<- int) int {
 	program := make([]int, len(prog))
 	copy(program, prog)
 	lastOutput := 0
@@ -113,7 +113,7 @@ func part1(prog []int, input <-chan int, output chan<- int) int {
 	}
 }
 
-func parse(s string) []int {
+func ParseIntCode(s string) []int {
 	s1 := strings.Split(s, ",")
 	o := make([]int, len(s1)+10)
 	for k := range s1 {
@@ -151,7 +151,7 @@ func permutations(arr []int) [][]int {
 	return res
 }
 
-func part0(program []int, part int) int {
+func AmpRunner(program []int, part int) int {
 	var signals [][]int
 	if part == 1 {
 		signals = permutations([]int{0, 1, 2, 3, 4})
@@ -169,26 +169,28 @@ func part0(program []int, part int) int {
 
 			wg := sync.WaitGroup{}
 			wg.Add(5)
-			go func() { part1(program, signalchan[0], signalchan[1]); wg.Done() }()
-			go func() { part1(program, signalchan[1], signalchan[2]); wg.Done() }()
-			go func() { part1(program, signalchan[2], signalchan[3]); wg.Done() }()
-			go func() { part1(program, signalchan[3], signalchan[4]); wg.Done() }()
-			go func() { result <- part1(program, signalchan[4], signalchan[0]); wg.Done() }()
 
+			// Wire up all the "Amp"s and connect the inputs together.
+			// Note all of them will start running until blocked and waiting
+			// on their inputs (phase first):
+			go func() { IntCodeVM(program, signalchan[0], signalchan[1]); wg.Done() }()
+			go func() { IntCodeVM(program, signalchan[1], signalchan[2]); wg.Done() }()
+			go func() { IntCodeVM(program, signalchan[2], signalchan[3]); wg.Done() }()
+			go func() { IntCodeVM(program, signalchan[3], signalchan[4]); wg.Done() }()
+			go func() { result <- IntCodeVM(program, signalchan[4], signalchan[0]); wg.Done() }()
+
+			// Load all phases into the inputs to the Amps
 			for i := range signal {
 				signalchan[i] <- signal[i]
 			}
+			// Signal everyone to start processing
 			signalchan[0] <- 0
-
 			wg.Wait()
-
-			// result <- (<-signalchan[0])
 		}(signal)
 	}
 	max := 0
 	for range signals {
 		r := <-result
-		// log.Println(r)
 		if r > max {
 			max = r
 		}
@@ -198,24 +200,24 @@ func part0(program []int, part int) int {
 }
 
 func main() {
-	if false {
+	if true {
 		// Part 1
-		program := parse("3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0")
-		part0(program, 1)
+		program := ParseIntCode("3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0")
+		AmpRunner(program, 1)
 
-		program = parse("3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0")
-		part0(program, 1)
+		program = ParseIntCode("3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0")
+		AmpRunner(program, 1)
 
-		program = parse("3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0")
-		part0(program, 1)
+		program = ParseIntCode("3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0")
+		AmpRunner(program, 1)
 	}
 	if true {
 		// Part 2
-		program := parse("3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5")
-		part0(program, 2)
+		program := ParseIntCode("3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5")
+		AmpRunner(program, 2)
 
-		program = parse("3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10")
-		part0(program, 2)
+		program = ParseIntCode("3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10")
+		AmpRunner(program, 2)
 	}
 	if true {
 		fileName := "input.txt"
@@ -228,13 +230,10 @@ func main() {
 
 		scanner := bufio.NewScanner(file)
 		scanner.Scan()
-		prog := parse(scanner.Text())
+		prog := ParseIntCode(scanner.Text())
 		fmt.Println("Part 1:")
-		part0(prog, 1)
+		AmpRunner(prog, 1)
 		fmt.Println("Part 2:")
-		part0(prog, 2)
-
-		// fmt.Println("Part 1", part1(prog, 1))
-		// fmt.Println("Part 2", part1(prog, 5))
+		AmpRunner(prog, 2)
 	}
 }
