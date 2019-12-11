@@ -14,27 +14,6 @@ type Coord struct {
 	x, y int
 }
 
-func CountSeen(points map[Coord]bool, point Coord) int {
-	seen := 0
-	dir := make(map[float64]bool)
-	for k := range points {
-		dx := float64(k.x - point.x)
-		dy := float64(k.y - point.y)
-
-		if dx == 0.0 && dy == 0.0 {
-			continue
-		}
-		d := math.Atan2(dy, dx)
-
-		if dir[d] {
-			continue
-		}
-		seen++
-		dir[d] = true
-	}
-	return seen
-}
-
 type vectorDist struct {
 	x, y     int
 	distance float64
@@ -47,8 +26,30 @@ func (s vectorDists) Less(i, j int) bool {
 	return s[i].distance < s[j].distance
 }
 
-func Zappy(points map[Coord]bool, point Coord) int {
-	fmt.Println("Zapping", point.x, point.y)
+// CountSeen returns number of satellite seen from the given point
+func CountSeen(points map[Coord]bool, point Coord) int {
+	seen := 0
+	dir := make(map[float64]bool)
+	for k := range points {
+		dx := float64(k.x - point.x)
+		dy := float64(k.y - point.y)
+
+		if dx == 0.0 && dy == 0.0 {
+			continue
+		}
+		d := math.Atan2(dy, dx) // counterclockwise from 3 o'clock
+
+		if dir[d] {
+			continue
+		}
+		seen++
+		dir[d] = true
+	}
+	return seen
+}
+
+// Zappy zaps satellites from a given point until nzap is zapped. Returns merged coord
+func Zappy(points map[Coord]bool, point Coord, nzap int) (ret int) {
 	dir := make(map[float64]vectorDists)
 	dirs := make([]float64, 0)
 	debug := false
@@ -62,16 +63,16 @@ func Zappy(points map[Coord]bool, point Coord) int {
 		}
 
 		// clockwise now, in degrees. Hack, hack
-		direction := math.Atan2(dx, dy) * 180 / math.Pi
+		direction := math.Atan2(dx, dy) * -180 / math.Pi
 		if direction < 0 {
 			direction += 360
 		}
-		direction = -direction
-		if direction < 0 {
-			direction += 360
-		}
-		if k.x == 11 && k.y == 12 {
-			fmt.Println("xxx", dx, dy, distance, direction)
+
+		if debug {
+			// Check if the bearing given in the example is correct
+			if k.x == 11 && k.y == 12 {
+				fmt.Println("xxx", dx, dy, distance, direction)
+			}
 		}
 
 		_, exists := dir[direction]
@@ -82,7 +83,9 @@ func Zappy(points map[Coord]bool, point Coord) int {
 		dir[direction] = append(dir[direction], vectorDist{k.x, k.y, distance})
 	}
 	sort.Float64s(dirs)
-	fmt.Println(dirs)
+	if debug {
+		fmt.Println(dirs)
+	}
 	for k := range dir {
 		if debug {
 			fmt.Printf("Before %+v\n", dir[k])
@@ -94,33 +97,29 @@ func Zappy(points map[Coord]bool, point Coord) int {
 	}
 
 	currentDirIdx := 0
-	for zapped := 0; zapped <= 200; zapped++ {
+	lastzapped := vectorDist{}
+	if nzap > len(points)-1 {
+		nzap = len(points) - 1
+	}
+	for zapped := 0; zapped < nzap; zapped++ {
 		currentDir := dirs[currentDirIdx]
-		for {
-			if len(dir[currentDir]) > 0 {
-				break
-			}
-			// fmt.Println("skip", dir[currentDir])
+		for len(dir[currentDir]) == 0 {
 			currentDirIdx = (currentDirIdx + 1) % len(dirs)
 			currentDir = dirs[currentDirIdx]
 		}
 
-		if zapped == 199 {
-			fmt.Println("200", dir[currentDir][0])
-			break
-		}
 		// Zap!
-		fmt.Println(zapped, currentDirIdx, currentDir, dir[currentDir][0])
+		lastzapped = dir[currentDir][0]
+		if debug {
+			fmt.Println(zapped, currentDirIdx, currentDir, lastzapped)
+		}
 		dir[currentDir] = dir[currentDir][1:]
 		currentDirIdx = (currentDirIdx + 1) % len(dirs)
 	}
-	// 	seen--
-	// }
-
-	return 0
+	return lastzapped.x*100 + lastzapped.y
 }
 
-func dofile(fileName string) {
+func dofile(fileName string, nzap int) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
@@ -180,7 +179,7 @@ func dofile(fileName string) {
 	}
 	fmt.Println("Best", fileName, "is", best, "at", bestCoord)
 
-	Zappy(points, bestCoord)
+	fmt.Println("Last zapped:", Zappy(points, bestCoord, nzap))
 
 	if debug {
 		for _, row := range grid {
@@ -194,9 +193,9 @@ func dofile(fileName string) {
 }
 
 func main() {
-	// dofile("test.txt")  // 8
-	// dofile("test2.txt") // 33
-	// dofile("test3.txt") // 41
-	// dofile("test4.txt") // 210
-	dofile("input.txt") // 13 19 too high
+	dofile("test.txt", 200)  // 8
+	dofile("test2.txt", 200) // 33
+	dofile("test3.txt", 200) // 41
+	dofile("test4.txt", 200) // 210 802
+	dofile("input.txt", 200)
 }
