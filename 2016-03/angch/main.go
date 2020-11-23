@@ -49,33 +49,22 @@ func main() {
 		b[i] = make([]int, 3, 3)
 	}
 	countb := 0
-	for scanner.Scan() {
+c:
+	for {
 		i := 0
-		l := scanner.Text()
-		fmt.Sscanf(l, "%d %d %d", &(b[0][i]), &(b[1][i]), &(b[2][i]))
-		// log.Println(b)
-
-		scanner.Scan()
-		l = scanner.Text()
-		i++
-		fmt.Sscanf(l, "%d %d %d", &(b[0][i]), &(b[1][i]), &(b[2][i]))
-
-		scanner.Scan()
-		l = scanner.Text()
-		i++
-		fmt.Sscanf(l, "%d %d %d", &(b[0][i]), &(b[1][i]), &(b[2][i]))
-
-		// log.Println(b[0])
-		if isValid(b[0]) {
-			countb++
+		for ; i < 3; i++ {
+			if !scanner.Scan() {
+				break c
+			}
+			l := scanner.Text()
+			fmt.Sscanf(l, "%d %d %d", &(b[0][i]), &(b[1][i]), &(b[2][i]))
 		}
-		if isValid(b[1]) {
-			countb++
-		}
-		if isValid(b[2]) {
-			countb++
+
+		for i--; i >= 0; i-- {
+			if isValid(b[i]) {
+				countb++
+			}
 		}
 	}
-	log.Println(countb)
-
+	log.Println(countb) // 1826
 }
