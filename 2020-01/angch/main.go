@@ -18,22 +18,54 @@ func process1(input []int, sum int) {
 	}
 }
 
-func process2(input []int, sum int) {
+func process2(input []int, sum int) int {
 	for i := 0; i < len(input); i++ {
-		for j := i; j < len(input); j++ {
+		for j := i + 1; j < len(input); j++ {
 			foo := input[i] + input[j]
 			if foo > sum {
 				continue
 			}
-			for k := j; k < len(input); k++ {
+			for k := j + 1; k < len(input); k++ {
 				if foo+input[k] == sum {
-					log.Println(input[i], input[j], input[k], input[i]*input[j]*input[k])
-					return
+					return input[i] * input[j] * input[k]
 				}
 			}
 		}
 	}
+	return 0
 }
+
+func process2clever(input []int, sum int) int {
+	seen := make(map[int]bool, len(input))
+
+	// Make a lookup map of the input we know exists,
+	// and avoid a O(N^3) triple nested loop scan
+	for _, v := range input {
+		seen[v] = true
+	}
+
+	for i, v := range input {
+		left := sum - v
+		if left <= 0 {
+			continue
+		}
+		for j := i + 1; j < len(input); j++ {
+			if seen[left-input[j]] {
+				a, b, c := v, input[j], left-input[j]
+				return a * b * c
+			}
+		}
+	}
+	return 0
+}
+
+// Seen
+// 1721 t
+//  979 t
+
+// seen2
+// [123] = 1721, 979
+//
 
 func main() {
 	input := []int{
@@ -60,7 +92,11 @@ func main() {
 		i, _ := strconv.Atoi(l)
 		a = append(a, i)
 	}
-	process1(a, sum)
-	process2(input, sum)
-	process2(a, sum)
+	// process1(a, sum)
+
+	log.Println(process2(input, sum))
+	log.Println(process2(a, sum))
+
+	log.Println(process2clever(input, sum))
+	log.Println(process2clever(a, sum))
 }
