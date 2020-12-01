@@ -11,8 +11,8 @@ func process1(input []int, sum int) {
 	for i := 0; i < len(input); i++ {
 		for j := i; j < len(input); j++ {
 			if input[i]+input[j] == sum {
-
 				log.Println(input[i], input[j], input[i]*input[j])
+				return
 			}
 		}
 	}
@@ -28,6 +28,7 @@ func process2(input []int, sum int) {
 			for k := j; k < len(input); k++ {
 				if foo+input[k] == sum {
 					log.Println(input[i], input[j], input[k], input[i]*input[j]*input[k])
+					return
 				}
 			}
 		}
