@@ -7,9 +7,9 @@ import (
 	"os"
 )
 
-func parseAndCheck(i string) (int, int, rune, string, bool, bool) {
+func parseAndCheck(input string) (int, int, rune, string, bool, bool) {
 	from, to, c, pass, count := 0, 0, ' ', "", 0
-	fmt.Sscanf(i, "%d-%d %c: %s\n", &from, &to, &c, &pass)
+	fmt.Sscanf(input, "%d-%d %c: %s\n", &from, &to, &c, &pass)
 
 	for _, v := range pass {
 		if v == c {
@@ -17,6 +17,10 @@ func parseAndCheck(i string) (int, int, rune, string, bool, bool) {
 		}
 	}
 	valid1 := count >= from && count <= to
+	if from-1 < 0 || to-1 < 0 || from-1 >= len(pass) || to-1 >= len(pass) {
+		// Yes, this is an assert, Ivan.
+		log.Fatal("Out of bounds")
+	}
 	valid2 := (pass[from-1] == byte(c)) != (pass[to-1] == byte(c))
 
 	return from, to, c, pass, valid1, valid2
