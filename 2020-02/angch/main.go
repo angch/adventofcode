@@ -7,47 +7,33 @@ import (
 	"os"
 )
 
-func parse(i string) (int, int, rune, string, bool, bool) {
-	from, to := 0, 0
-	var c rune
-	var pass string
+func parseAndCheck(i string) (int, int, rune, string, bool, bool) {
+	from, to, c, pass, count := 0, 0, ' ', "", 0
 	fmt.Sscanf(i, "%d-%d %c: %s\n", &from, &to, &c, &pass)
 
-	count := 0
 	for _, v := range pass {
 		if v == c {
 			count++
 		}
 	}
-	valid := false
-	if count >= from && count <= to {
-		valid = true
-	}
+	valid1 := count >= from && count <= to
+	valid2 := (pass[from-1] == byte(c)) != (pass[to-1] == byte(c))
 
-	valid2 := false
-	cnt := 0
-	if pass[from-1] == byte(c) {
-		cnt++
-	}
-	if pass[to-1] == byte(c) {
-		cnt++
-	}
-	if cnt == 1 {
-		valid2 = true
-	}
-
-	return from, to, c, pass, valid, valid2
+	return from, to, c, pass, valid1, valid2
 }
 
 func main() {
+	// Test inputs
 	inputs := []string{
-		"1-3 a: abcde", "1-3 b: cdefg",
+		"1-3 a: abcde",
+		"1-3 b: cdefg",
 		"2-9 c: ccccccccc",
 	}
 	for _, input := range inputs {
-		log.Println(parse(input))
+		log.Println(parseAndCheck(input))
 	}
 
+	// Actual inputs
 	fileName := "input.txt"
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -55,18 +41,16 @@ func main() {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	// a := make([]int, 0)
-	count, count2 := 0, 0
+	count1, count2 := 0, 0
 	for scanner.Scan() {
 		l := scanner.Text()
-		_, _, _, _, valid, valid2 := parse(l)
-		if valid {
-			count++
+		_, _, _, _, valid1, valid2 := parseAndCheck(l)
+		if valid1 {
+			count1++
 		}
 		if valid2 {
 			count2++
 		}
-
 	}
-	log.Println(count, count2)
+	log.Println(count1, count2)
 }
