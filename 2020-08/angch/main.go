@@ -54,16 +54,16 @@ func do(fileName string) (int, int) {
 
 	for k := 0; k < len(vm); k++ {
 		if vm[k].Op == "jmp" {
-			vm2 := make([]Opcode, len(vm))
-			copy(vm2, vm)
-			vm2[k].Op = "nop"
+			go func(k int) {
+				vm2 := make([]Opcode, len(vm))
+				copy(vm2, vm)
+				vm2[k].Op = "nop"
 
-			go func() {
 				acc, term := runner(vm2)
 				if term {
 					ret2 <- acc
 				}
-			}()
+			}(k)
 		}
 	}
 
