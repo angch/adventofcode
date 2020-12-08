@@ -27,12 +27,10 @@ func runner(vm []Opcode) (int, bool) {
 		switch opcode.Op {
 		case "acc":
 			acc += opcode.Arg
-			ip++
 		case "jmp":
-			ip += opcode.Arg
-		case "nop":
-			ip++
+			ip += opcode.Arg - 1
 		}
+		ip++
 	}
 }
 
@@ -51,25 +49,25 @@ func do(fileName string) (int, int) {
 		fmt.Sscanf(l, "%s %d", &opcode.Op, &opcode.Arg)
 		vm = append(vm, opcode)
 	}
-	log.Println("%+v\n", vm)
-
 	ret1, _ := runner(vm)
-	ret2 := 0
+	ret2 := make(chan int)
 
 	for k := 0; k < len(vm); k++ {
 		if vm[k].Op == "jmp" {
 			vm2 := make([]Opcode, len(vm))
 			copy(vm2, vm)
 			vm2[k].Op = "nop"
-			acc, term := runner(vm2)
-			if term {
-				ret2 = acc
-				break
-			}
+
+			go func() {
+				acc, term := runner(vm2)
+				if term {
+					ret2 <- acc
+				}
+			}()
 		}
 	}
 
-	return ret1, ret2
+	return ret1, <-ret2
 }
 
 func main() {
