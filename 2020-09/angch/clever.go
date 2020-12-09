@@ -61,8 +61,8 @@ ii:
 				}
 			}
 			if inv == sum {
-				min, max = 9999999999, -1
-				for k := i; k <= j; k++ {
+				min, max = numbers[i], numbers[i]
+				for k := i + 1; k <= j; k++ {
 					if numbers[k] < min {
 						min = numbers[k]
 					}
