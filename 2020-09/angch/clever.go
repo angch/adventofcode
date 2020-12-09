@@ -51,6 +51,7 @@ ii:
 
 		for j := i; j < len(numbers); j++ {
 			sum += numbers[j]
+		ii2:
 			ncompares++
 			if inv == sum {
 				min, max = 9999999999, -1
@@ -63,6 +64,11 @@ ii:
 					}
 				}
 				break ii
+			}
+			if sum > inv { // I didn't have this initially, but it ran in < 0.01 seconds anyway...
+				sum -= numbers[i]
+				i++
+				goto ii2
 			}
 		}
 	}
