@@ -26,41 +26,39 @@ func do(fileName string) (int, int) {
 		a := strings.Split(l, ",")
 		for k, v := range a {
 			num, _ := strconv.Atoi(v)
-			_, ok := nums[num]
+			k2, ok := nums[num]
 			if !ok {
-				nums[num] = make([]int, 0, 2)
+				k2 = make([]int, 0, 2)
 			}
-			nums[num] = append(nums[num], k+1)
-			pos = k + 1
-			last = num
+			nums[num] = append(k2, k+1)
+			pos, last = k+1, num
 		}
 	}
 
 	out := 0
 	for {
-		if len(nums[last]) == 1 {
+		k := nums[last]
+		if len(k) == 1 {
 			out = 0
 		} else {
-			out = nums[last][len(nums[last])-1] - nums[last][len(nums[last])-2]
+			out = k[1] - k[0]
 		}
 		pos++
 
-		_, ok := nums[out]
+		k, ok := nums[out]
 		if !ok {
-			nums[out] = make([]int, 0, 2)
+			k = make([]int, 0, 2)
 		}
-		if len(nums[out]) <= 1 {
-			nums[out] = append(nums[out], pos)
+		if len(k) <= 1 {
+			nums[out] = append(k, pos)
 		} else {
-			nums[out][0] = nums[out][1]
-			nums[out][1] = pos
+			k[0], k[1] = k[1], pos
 		}
 		last = out
 		if pos == 2020 {
 			ret1 = last
 		}
 		if pos >= 30000000 {
-			// if pos >= 2020 {
 			break
 		}
 	}
@@ -69,8 +67,63 @@ func do(fileName string) (int, int) {
 	return ret1, ret2
 }
 
+type Vec struct {
+	One int32
+	Two int32
+}
+
+func do2(input []int) (int, int) {
+	ret1, ret2 := 0, 0
+
+	nums := make([]Vec, 30000000)
+	last, pos := int32(0), int32(0)
+	for _, v := range input {
+		pos++
+		last = int32(v)
+		nums[last] = Vec{One: int32(pos)}
+	}
+
+	// k := nums[last]
+	for {
+		k := nums[last]
+		if k.Two == 0 {
+			last = 0
+		} else {
+			last = k.One
+		}
+		pos++
+		if pos == 2020 {
+			ret1 = int(last)
+		}
+		if pos >= 30000000 {
+			break
+		}
+
+		k = nums[last]
+		if k.One == 0 {
+			nums[last] = Vec{
+				One: pos,
+			}
+		} else if k.Two == 0 {
+			nums[last] = Vec{
+				One: pos - k.One,
+				Two: pos,
+			}
+		} else {
+			nums[last] = Vec{
+				One: pos - k.Two,
+				Two: pos,
+			}
+		}
+	}
+	ret2 = int(last)
+
+	return ret1, ret2
+}
+
 func main() {
-	log.Println(do("test.txt"))
+	// log.Println(do("test.txt"))
 	// log.Println(do("test2.txt"))
-	log.Println(do("input.txt"))
+	// log.Println(do("input.txt"))
+	log.Println(do2([]int{12, 20, 0, 6, 1, 17, 7}))
 }
