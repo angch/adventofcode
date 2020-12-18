@@ -261,6 +261,7 @@ func do2(fileName string) (ret1 int, ret2 int) {
 			for len(opstack) > 0 {
 				top := opstack[len(opstack)-1]
 				opstack = opstack[:len(opstack)-1]
+				log.Println("RPN: push", top)
 				tokbuffer <- top
 			}
 			log.Println("RPN: Close channel", opstack)
@@ -274,25 +275,29 @@ func do2(fileName string) (ret1 int, ret2 int) {
 			if v == "*" || v == "+" || v == "-" {
 				n1 := stack[len(stack)-1]
 				n2 := stack[len(stack)-2]
+				n3 := 0
 				stack = stack[:len(stack)-2]
 				if v == "+" {
-					n3 := n1 + n2
+					n3 = n1 + n2
 					stack = append(stack, n3)
 				} else if v == "-" {
-					n3 := n1 - n2
+					n3 = n1 - n2
 					stack = append(stack, n3)
 				} else if v == "*" {
-					n3 := n1 * n2
+					n3 = n1 * n2
 					stack = append(stack, n3)
 				}
-				log.Println("\t\t\t\teval:", v, stack)
+				// log.Println("\t\t\t\teval:", v, stack, "=", n3)
+				log.Println("\t\t\t\t\t=", stack)
 				continue
 			}
 			num, err := strconv.Atoi(v)
 			if err != nil {
 				log.Fatal(err)
 			}
+			// log.Println("\t\t\t\teval:", v, stack)
 			stack = append(stack, num)
+			log.Println("\t\t\t\t\t=", stack)
 			// log.Println("eval:", v, stack)
 		}
 		num := stack[0]
