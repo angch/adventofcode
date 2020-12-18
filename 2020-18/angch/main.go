@@ -206,40 +206,14 @@ func do2(fileName string) (ret1 int, ret2 int) {
 		tokbuffer := make([]string, 0)
 		opstack := make([]string, 0)
 		op := ""
-		log.Println("input", toks)
+		log.Println("Input:", toks)
 		for _, v := range toks {
 			if v == "" {
 				continue
 			}
-
-			// if v == "(" {
-			// 	tokbuffer = append(tokbuffer, v)
-			// 	continue
-			// }
-
-			// if v == ")" {
-			// 	toks := make([]string, 0)
-
-			// 	for {
-			// 		t := tokbuffer[len(tokbuffer)-1]
-			// 		tokbuffer = tokbuffer[:len(tokbuffer)-1]
-
-			// 		if t == "(" {
-			// 			break
-			// 		}
-
-			// 		toks = append(toks, t)
-			// 	}
-			// 	log.Println(" tok", toks, num)
-			// 	// num = dotok(toks)
-			// } else {
-
-			// 	tokbuffer = append(tokbuffer, v)
-			// }
-			// log.Print(" num", num)
 			if v == "(" {
 				opstack = append(opstack, v)
-				log.Println(v, tokbuffer, opstack)
+				log.Println("RPN:", v, tokbuffer, opstack)
 				continue
 			}
 			if v == ")" {
@@ -253,7 +227,7 @@ func do2(fileName string) (ret1 int, ret2 int) {
 						break
 					}
 				}
-				log.Println(v, tokbuffer, opstack)
+				log.Println("RPN:", v, tokbuffer, opstack)
 				continue
 			}
 			if v == "+" || v == "-" || v == "*" {
@@ -273,7 +247,7 @@ func do2(fileName string) (ret1 int, ret2 int) {
 					}
 					opstack = append(opstack, v)
 				}
-				log.Println(v, tokbuffer, opstack)
+				log.Println("RPN:", v, tokbuffer, opstack)
 				continue
 			}
 
@@ -281,7 +255,7 @@ func do2(fileName string) (ret1 int, ret2 int) {
 			if op != "" {
 				tokbuffer = append(tokbuffer, op)
 			}
-			log.Println(v, tokbuffer, opstack)
+			log.Println("RPN:", v, tokbuffer, opstack)
 		}
 
 		for len(opstack) > 0 {
@@ -290,11 +264,11 @@ func do2(fileName string) (ret1 int, ret2 int) {
 			tokbuffer = append(tokbuffer, top)
 		}
 
-		log.Println(tokbuffer, opstack)
+		log.Println("RPN:", tokbuffer, opstack)
 
 		stack := make([]int, 0)
 		for _, v := range tokbuffer {
-			log.Println("e ", v, stack)
+			// log.Println("eval:", v, stack)
 			if v == "*" || v == "+" || v == "-" {
 				n1 := stack[len(stack)-1]
 				n2 := stack[len(stack)-2]
@@ -309,6 +283,7 @@ func do2(fileName string) (ret1 int, ret2 int) {
 					n3 := n1 * n2
 					stack = append(stack, n3)
 				}
+				log.Println("eval:", v, stack)
 				continue
 			}
 			num, err := strconv.Atoi(v)
@@ -316,19 +291,15 @@ func do2(fileName string) (ret1 int, ret2 int) {
 				log.Fatal(err)
 			}
 			stack = append(stack, num)
+			log.Println("eval:", v, stack)
 		}
 		num = stack[0]
 
-		// num = dotok(toks)
-
-		log.Println(k, "num", num)
+		log.Println("Result:", num)
 		sum += num
-		// break
 	}
 	ret1 = sum
 
-	//3414545442547727
-	// 3881468912309
 	return ret1, ret2
 }
 
