@@ -12,12 +12,6 @@ import (
 type Hands map[int][]int
 
 func (h *Hands) Hash() string {
-	// m, err := json.Marshal(*h)
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// k := md5.Sum(m)
 	j := md5.New()
 	for _, v := range (*h)[1] {
 		j.Write([]byte{byte(v)})
@@ -76,27 +70,23 @@ a:
 		} else {
 			hands[2] = append(hands[2], top[2], top[1])
 		}
-		log.Println(hands)
+		// log.Println(hands)
 	}
 
-	log.Println(hands)
-	for _, v := range hands {
+	for k, v := range hands {
 		if len(v) == 0 {
 			continue
 		}
+		log.Println("Winner", k, hands)
 
 		for k2, v2 := range v {
 			ret1 += v2 * (len(v) - k2)
-			log.Println(v2, (len(v) - k2))
 		}
 	}
-	// ret1 = count
-
 	return ret1, ret2
 }
 
 var debug = false
-
 var history2 = map[string]int{}
 
 func subgame(hands Hands, round int, game int) (int, Hands) {
@@ -224,6 +214,8 @@ func do2(fileName string) (ret1 int, ret2 int) {
 		}
 	}
 	// ret1 = count
+	// log.Println(history2)
+	ret2 = len(history2)
 
 	return ret1, ret2
 }
@@ -231,6 +223,6 @@ func do2(fileName string) (ret1 int, ret2 int) {
 func main() {
 	// log.Println(do("test.txt"))
 	// log.Println(do2("test.txt"))
-	// log.Println(do("input.txt"))
+	log.Println(do("input.txt"))
 	log.Println(do2("input.txt"))
 }
