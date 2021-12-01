@@ -1,40 +1,32 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
-	"strings"
 )
 
 func main() {
-	s, _ := ioutil.ReadFile("input.txt")
-	lines := strings.Split(string(s), "\r\n")
-	prev := 99999
-	inc := 0
-	inc2 := 0
-	win1 := make([]int, 0)
-	// win2 := make([]int, 0)
-	for _, line := range lines {
-		n, err := strconv.Atoi(line)
-		if err != nil {
-			panic(err)
-		}
-		win1 = append(win1, n)
-		if len(win1) > 3 {
-			a := win1[len(win1)-4]
-			// b := n
-			if n > a {
-				inc2++
+	file, _ := os.Open("test.txt")
+	scanner := bufio.NewScanner(file)
+	var part1, part2 int
+	win := make([]int, 0)
+	for scanner.Scan() {
+		line := scanner.Text()
+		n, _ := strconv.Atoi(line)
+		win = append(win, n)
+		if len(win) >= 2 {
+			if n > win[len(win)-2] {
+				part1++
 			}
 		}
-		// win2 = win1
-		// fmt.Println(n, line, win1)
-		if n > prev {
-			inc++
+		if len(win) >= 4 {
+			a := win[len(win)-4]
+			if n > a {
+				part2++
+			}
 		}
-		prev = n
-
 	}
-	fmt.Println(inc, inc2)
+	fmt.Println(part1, part2)
 }
