@@ -4,19 +4,19 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 const p1, p2 = 2, 4
 
 func main() {
 	file, _ := os.Open("test.txt")
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	var part1, part2 int
 	var win []int
 	for scanner.Scan() {
-		line := scanner.Text()
-		n, _ := strconv.Atoi(line)
+		var n int
+		fmt.Sscanf(scanner.Text(), "%d", &n)
 		win = append(win, n)
 		if len(win) >= p1 {
 			if n > win[len(win)-p1] {
