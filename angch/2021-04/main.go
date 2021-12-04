@@ -25,58 +25,10 @@ func newBoard(n int) board {
 		b[i] = make([]int, n)
 		marks[i] = make([]int, n)
 	}
-	// log.Println(b, n)
 	return board{nums: b, marks: marks}
 }
 
-func (b board) mark(n int) {
-	for i := 0; i < len(b.nums); i++ {
-		for j := 0; j < len(b.nums); j++ {
-			// log.Println(i, j, len(b.nums), n)
-			// nice, copilot
-			if b.nums[i][j] == n {
-				b.marks[i][j] = 1
-				return
-			}
-		}
-	}
-}
-
-func (b board) sum() int {
-	sum := 0
-	for i := 0; i < len(b.nums); i++ {
-		for j := 0; j < len(b.nums); j++ {
-			if b.marks[i][j] == 0 {
-				sum += b.nums[i][j]
-			}
-		}
-	}
-	return sum
-}
-
-func (b board) isbingo() bool {
-	for i := 0; i < len(b.nums); i++ {
-		bcount := 0
-		bcount2 := -0
-		for j := 0; j < len(b.nums); j++ {
-			if b.marks[i][j] == 1 {
-				bcount++
-			}
-			if b.marks[j][i] == 1 {
-				bcount2++
-			}
-		}
-		if bcount == len(b.nums) {
-			return true
-		}
-		if bcount2 == len(b.nums) {
-			return true
-		}
-	}
-	return false
-}
-
-func boardfromtext(lines []string) board {
+func boardFromLines(lines []string) board {
 	n := len(lines)
 	b := newBoard(n)
 	for k, line := range lines {
@@ -95,7 +47,47 @@ func boardfromtext(lines []string) board {
 	return b
 }
 
-func part1() {
+func (b board) mark(n int) {
+	for i := 0; i < len(b.nums); i++ {
+		for j := 0; j < len(b.nums); j++ {
+			if b.nums[i][j] == n {
+				b.marks[i][j] = 1
+			}
+		}
+	}
+}
+
+func (b board) sum() int {
+	sum := 0
+	for i := 0; i < len(b.nums); i++ {
+		for j := 0; j < len(b.nums); j++ {
+			if b.marks[i][j] == 0 {
+				sum += b.nums[i][j]
+			}
+		}
+	}
+	return sum
+}
+
+func (b board) isBingo() bool {
+	for i := 0; i < len(b.nums); i++ {
+		bcount, bcount2 := 0, 0
+		for j := 0; j < len(b.nums); j++ {
+			if b.marks[i][j] == 1 {
+				bcount++
+			}
+			if b.marks[j][i] == 1 {
+				bcount2++
+			}
+		}
+		if bcount == len(b.nums) || bcount2 == len(b.nums) {
+			return true
+		}
+	}
+	return false
+}
+
+func day4() {
 	file, _ := os.Open(filepath)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -103,7 +95,6 @@ func part1() {
 	scanner.Scan()
 	nums := scanner.Text()
 	boards := make([]board, 0)
-	_ = nums
 	scanner.Scan()
 
 	for {
@@ -119,9 +110,8 @@ func part1() {
 		if len(lines) == 0 {
 			break
 		}
-		boards = append(boards, boardfromtext(lines))
+		boards = append(boards, boardFromLines(lines))
 	}
-	fmt.Println(boards)
 	bingo := strings.Split(nums, ",")
 
 	won := 0
@@ -132,7 +122,6 @@ func part1() {
 		if b == -1 {
 			continue
 		}
-		// log.Println("mark", b)
 
 		for bn, board := range boards {
 			if wonboard[bn] {
@@ -140,41 +129,23 @@ func part1() {
 			}
 			board.mark(b)
 
-			if board.isbingo() {
+			if board.isBingo() {
 				won++
 				wonboard[bn] = true
-				fmt.Println("Bingo!", bn, won)
-				fmt.Println("Sum:", board.sum())
-				fmt.Println("Score:", board.sum()*b)
-				if won == 1 {
-					fmt.Println(board.marks)
 
-				} else if won == len(boards)+1 {
-					fmt.Println(board.marks)
-					fmt.Println("Bingo2!", bn)
-					fmt.Println("Sum:", board.sum())
-					fmt.Println("Score:", board.sum()*b)
+				if won == 1 {
+					// fmt.Println(board.marks)
+					fmt.Println("Part 1 Score:", board.sum()*b)
+				} else if won == len(boards) {
+					// fmt.Println(board.marks)
+					fmt.Println("Part 2 Score:", board.sum()*b)
 					return
 				}
 			}
 		}
-		// break
-	}
-}
-
-func part2() {
-	file, _ := os.Open(filepath)
-
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		_ = line
 	}
 }
 
 func main() {
-	part1()
-	// part2()
+	day4()
 }
