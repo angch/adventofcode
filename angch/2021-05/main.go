@@ -39,7 +39,7 @@ func part1and2() {
 		lines = append(lines, line)
 	}
 
-	board := make(map[int]map[int]Counts)
+	board := make(map[Coord]Counts)
 
 	for _, l := range lines {
 		x, y := l.From.X, l.From.Y
@@ -62,27 +62,21 @@ func part1and2() {
 		}
 
 		for ; length >= 0; x, y, length = x+dx, y+dy, length-1 {
-			_, ok := board[y]
-			if !ok {
-				board[y] = make(map[int]Counts)
-			}
-			c := board[y][x]
+			c := board[Coord{x, y}]
 			if dx == 0 || dy == 0 {
 				c.Part1++
 			}
 			c.Part2++
-			board[y][x] = c
+			board[Coord{x, y}] = c
 		}
 	}
 	part1, part2 := 0, 0
 	for _, v := range board {
-		for _, v2 := range v {
-			if v2.Part1 > 1 {
-				part1++
-			}
-			if v2.Part2 > 1 {
-				part2++
-			}
+		if v.Part1 > 1 {
+			part1++
+		}
+		if v.Part2 > 1 {
+			part2++
 		}
 	}
 	fmt.Println("Part 1", part1)
