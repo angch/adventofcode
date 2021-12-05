@@ -6,10 +6,9 @@ import (
 	"os"
 )
 
-// var filepath = "input.txt"
+var filepath = "input.txt"
 
-var filepath = "test.txt"
-var debug = false
+// var filepath = "test.txt"
 
 type Coord struct {
 	X, Y int
@@ -18,10 +17,13 @@ type Line struct {
 	From Coord
 	To   Coord
 }
+type Counts struct {
+	Part1 int
+	Part2 int
+}
 
-func part1() {
+func part1and2() {
 	file, _ := os.Open(filepath)
-	// file, _ := os.Open("input.txt")
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	lines := make([]Line, 0)
@@ -36,85 +38,57 @@ func part1() {
 		}
 		lines = append(lines, line)
 	}
-	_ = lines
 
-	board := make(map[int]map[int]int)
+	board := make(map[int]map[int]Counts)
+
 	for _, l := range lines {
-		// log.Println(l)
-		if l.From.X == l.To.X {
-			y1, y2 := l.From.Y, l.To.Y
-			if y2 < y1 {
-				y1, y2 = y2, y1
+		x, y := l.From.X, l.From.Y
+		dx, dy, length := 0, 0, 0
+
+		if l.From.X > l.To.X {
+			dx = -1
+			length = l.From.X - l.To.X
+		} else if l.From.X < l.To.X {
+			dx = 1
+			length = l.To.X - l.From.X
+		}
+
+		if l.From.Y > l.To.Y {
+			dy = -1
+			length = l.From.Y - l.To.Y
+		} else if l.From.Y < l.To.Y {
+			dy = 1
+			length = l.To.Y - l.From.Y
+		}
+
+		for ; length >= 0; x, y, length = x+dx, y+dy, length-1 {
+			_, ok := board[y]
+			if !ok {
+				board[y] = make(map[int]Counts)
 			}
-			for y := y1; y <= y2; y++ {
-				_, ok := board[y]
-				if !ok {
-					board[y] = make(map[int]int)
-				}
-				board[y][l.From.X]++
+			c := board[y][x]
+			if dx == 0 || dy == 0 {
+				c.Part1++
 			}
-			// fmt.Println(board)
-		} else if l.From.Y == l.To.Y {
-			x1, x2 := l.From.X, l.To.X
-			if x2 < x1 {
-				x1, x2 = x2, x1
-			}
-			for x := x1; x <= x2; x++ {
-				_, ok := board[l.From.Y]
-				if !ok {
-					board[l.From.Y] = make(map[int]int)
-				}
-				board[l.From.Y][x]++
-			}
-			// fmt.Println(board)
-		} else {
-			count := l.From.X - l.To.X
-			if count < 0 {
-				count = -count
-			}
-			x1, x2 := l.From.X, l.To.X
-			dx := 1
-			if x2 < x1 {
-				dx = -1
-			}
-			y1, y2 := l.From.Y, l.To.Y
-			dy := 1
-			if y2 < y1 {
-				dy = -1
-			}
-			for x, y := x1, y1; count >= 0; x, y, count = x+dx, y+dy, count-1 {
-				_, ok := board[y]
-				if !ok {
-					board[y] = make(map[int]int)
-				}
-				board[y][x]++
-			}
+			c.Part2++
+			board[y][x] = c
 		}
 	}
-	count := 0
+	part1, part2 := 0, 0
 	for _, v := range board {
 		for _, v2 := range v {
-			if v2 > 1 {
-				count++
+			if v2.Part1 > 1 {
+				part1++
+			}
+			if v2.Part2 > 1 {
+				part2++
 			}
 		}
 	}
-	fmt.Println(count)
-}
-
-func part2() {
-	file, _ := os.Open(filepath)
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		_ = line
-	}
-
+	fmt.Println("Part 1", part1)
+	fmt.Println("Part 2", part2)
 }
 
 func main() {
-	part1()
-	// part2()
+	part1and2()
 }
