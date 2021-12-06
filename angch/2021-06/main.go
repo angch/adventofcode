@@ -26,15 +26,12 @@ func part1and2() {
 		ageCounts[a]++
 	}
 
-	for day, index := 1, 0; day <= 256; day++ {
-		zero := ageCounts[index%9]
-		index++
-		ageCounts[(6+index)%9] += zero
-		total += zero
-
+	for day := 0; day < 256; day++ {
 		if day == 80 {
 			fmt.Println("Part 1", total)
 		}
+		total += ageCounts[day%9]
+		ageCounts[(7+day)%9] += ageCounts[day%9]
 	}
 	fmt.Println("Part 2", total)
 }
