@@ -1,23 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"strconv"
 	"strings"
 )
 
-var filepath = "input.txt"
-
-// var filepath = "test.txt"
-
-func part1and2() {
-	file, _ := os.Open(filepath)
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	scanner.Scan()
-	agesStr := strings.Split(scanner.Text(), ",")
+func day6(filepath string) {
+	file, _ := ioutil.ReadFile(filepath)
+	agesStr := strings.Split(string(file), ",")
 
 	ageCounts := [9]int{}
 	total := len(agesStr)
@@ -37,5 +29,5 @@ func part1and2() {
 }
 
 func main() {
-	part1and2()
+	day6("input.txt")
 }
