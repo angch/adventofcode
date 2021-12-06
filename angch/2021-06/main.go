@@ -12,9 +12,6 @@ var filepath = "input.txt"
 
 // var filepath = "test.txt"
 
-type Fish struct {
-}
-
 func part1and2() {
 	file, _ := os.Open(filepath)
 	defer file.Close()
@@ -29,22 +26,16 @@ func part1and2() {
 		ageCounts[a]++
 	}
 
-	index := 0
-	for day := 0; day < 256; {
-		zero := ageCounts[index]
+	for day, index := 1, 0; day <= 256; day++ {
+		zero := ageCounts[index%9]
 		index++
-		if index >= 9 {
-			index = 0
-		}
 		ageCounts[(6+index)%9] += zero
-		day++
 		total += zero
 
 		if day == 80 {
 			fmt.Println("Part 1", total)
 		}
 	}
-
 	fmt.Println("Part 2", total)
 }
 
