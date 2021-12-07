@@ -19,7 +19,10 @@ type Counts struct {
 }
 
 func day5(filepath string) {
-	file, _ := os.Open(filepath)
+	file, err := os.Open(filepath)
+	if err != nil {
+		return
+	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	lines := make([]Line, 0)
