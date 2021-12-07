@@ -8,8 +8,11 @@ import (
 
 const p1, p2 = 2, 4
 
-func main() {
-	file, _ := os.Open("test.txt")
+func day1(filepath string) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return
+	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	var part1, part2 int
@@ -30,5 +33,11 @@ func main() {
 			win = win[1:]
 		}
 	}
-	fmt.Println(part1, part2)
+	fmt.Println("Part 1", part1)
+	fmt.Println("Part 2", part2)
+}
+
+func main() {
+	day1("test.txt")
+	day1("input.txt")
 }
