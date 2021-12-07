@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"io/ioutil"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -24,26 +24,18 @@ func f(a int) int {
 }
 
 func day7(filepath string) {
-	file, _ := os.Open(filepath)
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-
+	t, _ := ioutil.ReadFile(filepath)
 	pos := make([]int, 0)
-	scanner.Scan()
-	t := scanner.Text()
-	x := strings.Split(t, ",")
-	sum := 0
+	x := strings.Split(string(t), ",")
 	for _, v := range x {
 		a, _ := strconv.Atoi(v)
 		pos = append(pos, a)
-		sum += a
 	}
 
-	least1, least2 := 9999999999, 9999999999
+	least1, least2 := math.MaxInt, math.MaxInt
 	best1, best2 := -1, -1
 	for target := 0; target < len(pos); target++ {
-		fuel1 := 0
-		fuel2 := 0
+		fuel1, fuel2 := 0, 0
 		for _, v := range pos {
 			d := v - target
 			if d < 0 {
@@ -53,12 +45,10 @@ func day7(filepath string) {
 			fuel2 += f(d)
 		}
 		if fuel1 < least1 {
-			least1 = fuel1
-			best1 = target
+			least1, best1 = fuel1, target
 		}
 		if fuel2 < least2 {
-			least2 = fuel2
-			best2 = target
+			least2, best2 = fuel2, target
 		}
 	}
 	fmt.Println("Part 1", least1, best1)
