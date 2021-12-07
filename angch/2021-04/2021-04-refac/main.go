@@ -8,10 +8,6 @@ import (
 	"strings"
 )
 
-var filepath = "input.txt"
-
-// var filepath = "test.txt"
-
 type board struct {
 	nums   map[int][2]int
 	sum    int
@@ -61,8 +57,11 @@ func (b *board) mark(n int) {
 	}
 }
 
-func day4() {
-	file, _ := os.Open(filepath)
+func day4(filepath string) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return
+	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 
@@ -100,9 +99,9 @@ func day4() {
 			if board.bingo {
 				won++
 				if won == 1 {
-					fmt.Println("Part 1 Score:", board.sum*b)
+					fmt.Println("Part 1", board.sum*b)
 				} else if won == len(boards) {
-					fmt.Println("Part 2 Score:", board.sum*b)
+					fmt.Println("Part 2", board.sum*b)
 					return
 				}
 			}
@@ -111,5 +110,6 @@ func day4() {
 }
 
 func main() {
-	day4()
+	day4("test.txt")
+	day4("input.txt")
 }
