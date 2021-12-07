@@ -4,65 +4,34 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
-func part1() {
-	file, _ := os.Open("input.txt")
+func day2(filepath string) {
+	file, _ := os.Open(filepath)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	// var part1, part2 int
-	// var win []int
-	x, y, z := 0, 0, 0
+	x, z1, z2, aim := 0, 0, 0, 0
+
 	for scanner.Scan() {
-		line := scanner.Text()
-		s := strings.Split(line, " ")
-		n := 0
-		fmt.Sscanf(s[1], "%d", &n)
-		fmt.Println(s[0], n)
-		switch s[0] {
+		dir, n := "", 0
+		fmt.Sscanf(scanner.Text(), "%s %d", &dir, &n)
+		switch dir {
 		case "forward":
 			x += n
+			z2 += aim * n
 		case "down":
-			z += n
-		case "up":
-			z -= n
-		}
-
-	}
-	fmt.Println(x, y, z, x*z)
-}
-
-func part2() {
-	file, _ := os.Open("input.txt")
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	// var part1, part2 int
-	// var win []int
-	x, y, z := 0, 0, 0
-	aim := 0
-	for scanner.Scan() {
-		line := scanner.Text()
-		s := strings.Split(line, " ")
-		n := 0
-		fmt.Sscanf(s[1], "%d", &n)
-		fmt.Println(s[0], n)
-		switch s[0] {
-		case "forward":
-			x += n
-			z += aim * n
-		case "down":
-			// z += n
+			z1 += n
 			aim += n
 		case "up":
-			// z -= n
+			z1 -= n
 			aim -= n
 		}
-
 	}
-	fmt.Println(x, y, z, x*z)
+	fmt.Println("Part 1", x*z1)
+	fmt.Println("Part 2", x*z2)
 }
-func main() {
-	part2()
 
+func main() {
+	day2("test.txt")
+	day2("input.txt")
 }
