@@ -6,10 +6,6 @@ import (
 	"os"
 )
 
-var filepath = "input.txt"
-
-// var filepath = "test.txt"
-
 type Coord struct {
 	X, Y int
 }
@@ -22,7 +18,7 @@ type Counts struct {
 	Part2 int
 }
 
-func part1and2() {
+func day5(filepath string) {
 	file, _ := os.Open(filepath)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -84,5 +80,6 @@ func part1and2() {
 }
 
 func main() {
-	part1and2()
+	day5("test.txt")
+	day5("input.txt")
 }
