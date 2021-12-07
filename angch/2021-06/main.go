@@ -29,5 +29,6 @@ func day6(filepath string) {
 }
 
 func main() {
+	day6("test.txt")
 	day6("input.txt")
 }
