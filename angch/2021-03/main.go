@@ -6,11 +6,6 @@ import (
 	"os"
 )
 
-var filepath = "input.txt"
-
-// var filepath = "test.txt"
-var debug = false
-
 func str2bin(s string) int {
 	bin := 0
 	for _, v := range s {
@@ -22,13 +17,18 @@ func str2bin(s string) int {
 	return bin
 }
 
-func part1() {
+func day3(filepath string) {
 	file, _ := os.Open(filepath)
 	// file, _ := os.Open("input.txt")
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	counts := make([][2]int, 26)
 	length := 0
+
+	o2 := []string{}
+	co2 := []string{}
+
+	sum1, sum2 := 0, 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		_ = line
@@ -39,104 +39,68 @@ func part1() {
 				counts[k][1]++
 			}
 		}
-		length = len(line)
-	}
-	gamma := 0
-	epsilon := 0
-	for i := 0; i < length; i++ {
-		gamma <<= 1
-		epsilon <<= 1
-		if counts[i][0] < counts[i][1] {
-			gamma |= 1
-			// fmt.Print("1")
-		} else {
-			epsilon |= 1
-		}
-	}
-	fmt.Println(gamma * epsilon)
-
-}
-
-func part2() {
-	file, _ := os.Open(filepath)
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-
-	oxygen := []string{}
-	co2 := []string{}
-	sum1, sum2 := 0, 0
-
-	length := 0
-	for scanner.Scan() {
-		line := scanner.Text()
-		oxygen = append(oxygen, line)
+		o2 = append(o2, line)
 		co2 = append(co2, line)
 		length = len(line)
 	}
+	gamma := 0
+	for i := 0; i < length; i++ {
+		gamma <<= 1
+		if counts[i][0] < counts[i][1] {
+			gamma |= 1
+		}
 
-	for i := 0; i < length; i++ {
-		counts := [2]int{0, 0}
-		for _, v := range oxygen {
-			if v[i] == '0' {
-				counts[0]++
-			} else {
-				counts[1]++
+		if len(o2) > 1 {
+			o2count := [2]int{0, 0}
+			for _, v := range o2 {
+				if v[i] == '0' {
+					o2count[0]++
+				} else {
+					o2count[1]++
+				}
+			}
+			o2common := '0'
+			if o2count[0] <= o2count[1] {
+				o2common = '1'
+			}
+			for j := 0; j < len(o2); j++ {
+				if o2[j][i] != byte(o2common) {
+					o2 = append(o2[:j], o2[j+1:]...)
+					j--
+				}
 			}
 		}
-		mostcommon := '0'
-		if counts[0] <= counts[1] {
-			mostcommon = '1'
-		}
-		oxygen2 := make([]string, 0)
-		for _, v := range oxygen {
-			if v[i] == byte(mostcommon) {
-				oxygen2 = append(oxygen2, v)
+
+		if len(co2) > 1 {
+			co2count := [2]int{0, 0}
+			for _, v := range co2 {
+				if v[i] == '0' {
+					co2count[0]++
+				} else {
+					co2count[1]++
+				}
 			}
-		}
-		oxygen = oxygen2
-		if len(oxygen) == 1 {
-			if debug {
-				fmt.Println("oxy", oxygen[0])
+			co2leastcommon := '0'
+			if co2count[0] > co2count[1] {
+				co2leastcommon = '1'
 			}
-			sum1 = str2bin(oxygen[0])
-			break
-		}
-		if debug {
-			fmt.Println(i+1, oxygen, mostcommon)
+
+			for j := 0; j < len(co2); j++ {
+				if co2[j][i] != byte(co2leastcommon) {
+					co2 = append(co2[:j], co2[j+1:]...)
+					j--
+				}
+			}
 		}
 	}
-	for i := 0; i < length; i++ {
-		counts := [2]int{0, 0}
-		for _, v := range co2 {
-			if v[i] == '0' {
-				counts[0]++
-			} else {
-				counts[1]++
-			}
-		}
-		leastcommon := '0'
-		if counts[0] > counts[1] {
-			leastcommon = '1'
-		}
-		co22 := make([]string, 0)
-		for _, v := range co2 {
-			if v[i] == byte(leastcommon) {
-				co22 = append(co22, v)
-			}
-		}
-		co2 = co22
-		if len(co2) == 1 {
-			if debug {
-				fmt.Println("co2", co2[0])
-			}
-			sum2 = str2bin(co2[0])
-			break
-		}
-	}
-	fmt.Println(sum1 * sum2)
+	epsilon := ((1 << length) - 1) & ^gamma
+	fmt.Println("Part 1", gamma*epsilon)
+
+	sum1, sum2 = str2bin(o2[0]), str2bin(co2[0])
+	fmt.Println("Part 2", sum1, sum2, sum1*sum2)
 }
 
 func main() {
-	part1()
-	part2()
+	day3("test.txt")
+	day3("input.txt")
 }
