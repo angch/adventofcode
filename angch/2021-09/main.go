@@ -7,40 +7,32 @@ import (
 	"sort"
 )
 
-type Coord struct {
-	X, Y int
-}
+type Coord struct{ X, Y int }
 
-var adj = []Coord{
-	{-1, 0},
-	{1, 0},
-	{0, -1},
-	{0, 1},
-}
+var adj = []Coord{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 
-func flood(board [][]int, x, y int) int {
+func flood(board [][]int, c Coord) int {
 	basin := make(map[Coord]bool)
-	basin[Coord{x, y}] = true
-	eval := []Coord{{x, y}}
+	basin[c] = true
+	eval := []Coord{c}
 
 	for len(eval) > 0 {
-		var k Coord
-		k, eval = eval[len(eval)-1], eval[:len(eval)-1]
-		for c2 := range adj {
-			dx, dy := adj[c2].X, adj[c2].Y
-			c := board[k.Y][k.X]
-			if k.X+dx < 0 || k.X+dx >= len(board[k.Y]) {
+		var c1 Coord
+		c1, eval = eval[len(eval)-1], eval[:len(eval)-1]
+		for _, d := range adj {
+			c2 := Coord{c1.X + d.X, c1.Y + d.Y}
+			if c2.X < 0 || c2.X >= len(board[c1.Y]) {
 				continue
 			}
-			if k.Y+dy < 0 || k.Y+dy >= len(board) {
+			if c2.Y < 0 || c2.Y >= len(board) {
 				continue
 			}
-			v := board[k.Y+dy][k.X+dx]
-			if v > c && v != 9 {
-				coord := Coord{k.X + dx, k.Y + dy}
-				if !basin[coord] {
-					basin[coord] = true
-					eval = append(eval, coord)
+			v1 := board[c1.Y][c1.X]
+			v2 := board[c2.Y][c2.X]
+			if v2 > v1 && v2 < 9 {
+				if !basin[c2] {
+					basin[c2] = true
+					eval = append(eval, c2)
 				}
 			}
 		}
@@ -71,26 +63,24 @@ func day9(filepath string) {
 	part1 := 0
 
 	for y := 0; y < len(board); y++ {
+	next:
 		for x := 0; x < len(board[y]); x++ {
 			v := board[y][x]
-			bad := false
 			for _, d := range adj {
-				if x+d.X < 0 || x+d.X >= len(board[y]) {
+				c2 := Coord{x + d.X, y + d.Y}
+				if c2.X < 0 || c2.X >= len(board[y]) {
 					continue
 				}
-				if y+d.Y < 0 || y+d.Y >= len(board) {
+				if c2.Y < 0 || c2.Y >= len(board) {
 					continue
 				}
-				if v > board[y+d.Y][x+d.X] {
-					bad = true
-					break
+				if v > board[c2.Y][c2.X] {
+					continue next
 				}
 			}
-			if !bad {
-				area := flood(board, x, y)
-				areas = append(areas, area)
-				part1 += v + 1
-			}
+			area := flood(board, Coord{x, y})
+			areas = append(areas, area)
+			part1 += v + 1
 		}
 	}
 
