@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"strconv"
 )
 
 type Coord struct {
@@ -22,9 +21,7 @@ var adj = []Coord{
 func flood(board [][]int, x, y int) int {
 	basin := make(map[Coord]bool)
 	basin[Coord{x, y}] = true
-
-	eval := make([]Coord, 0)
-	eval = append(eval, Coord{x, y})
+	eval := []Coord{{x, y}}
 
 	for len(eval) > 0 {
 		var k Coord
@@ -64,15 +61,14 @@ func day9(filepath string) {
 		t := scanner.Text()
 		line := make([]int, 0)
 		for _, v := range t {
-			n, _ := strconv.Atoi(string(v))
-			line = append(line, n)
+			line = append(line, int(v-'0'))
 		}
 		board = append(board, line)
 	}
 	// fmt.Println(board)
 
-	low := make([]int, 0)
 	areas := make([]int, 0)
+	part1 := 0
 
 	for y := 0; y < len(board); y++ {
 		for x := 0; x < len(board[y]); x++ {
@@ -85,7 +81,7 @@ func day9(filepath string) {
 				if y+d.Y < 0 || y+d.Y >= len(board) {
 					continue
 				}
-				if board[y+d.Y][x+d.X] <= v {
+				if v > board[y+d.Y][x+d.X] {
 					bad = true
 					break
 				}
@@ -93,15 +89,11 @@ func day9(filepath string) {
 			if !bad {
 				area := flood(board, x, y)
 				areas = append(areas, area)
-
-				low = append(low, v)
+				part1 += v + 1
 			}
 		}
 	}
-	part1 := 0
-	for _, v := range low {
-		part1 += v + 1
-	}
+
 	fmt.Println("Part 1", part1)
 	sort.Ints(areas)
 	part2 := 1
