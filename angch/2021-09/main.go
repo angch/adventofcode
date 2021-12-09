@@ -12,7 +12,7 @@ type Coord struct {
 	X, Y int
 }
 
-var adj = [][2]int{
+var adj = []Coord{
 	{-1, 0},
 	{1, 0},
 	{0, -1},
@@ -23,10 +23,15 @@ func flood(board [][]int, x, y int) int {
 	basin := make(map[Coord]bool)
 	basin[Coord{x, y}] = true
 
-a:
-	for k := range basin {
+	eval := make([]Coord, 0)
+	eval = append(eval, Coord{x, y})
+
+	for len(eval) > 0 {
+		var k Coord
+		k, eval = eval[len(eval)-1], eval[:len(eval)-1]
 		for c2 := range adj {
-			dx, dy := adj[c2][0], adj[c2][1]
+			dx, dy := adj[c2].X, adj[c2].Y
+			c := board[k.Y][k.X]
 			if k.X+dx < 0 || k.X+dx >= len(board[k.Y]) {
 				continue
 			}
@@ -34,12 +39,12 @@ a:
 				continue
 			}
 			v := board[k.Y+dy][k.X+dx]
-			if v > board[k.Y][k.X] && v != 9 {
-				if basin[Coord{k.X + dx, k.Y + dy}] {
-					continue
+			if v > c && v != 9 {
+				coord := Coord{k.X + dx, k.Y + dy}
+				if !basin[coord] {
+					basin[coord] = true
+					eval = append(eval, coord)
 				}
-				basin[Coord{k.X + dx, k.Y + dy}] = true
-				goto a
 			}
 		}
 	}
@@ -73,27 +78,16 @@ func day9(filepath string) {
 		for x := 0; x < len(board[y]); x++ {
 			v := board[y][x]
 			bad := false
-			// log.Println(x, y, v)
-		out:
 			for _, d := range adj {
-				dx, dy := d[0], d[1]
-
-				if x+dx < 0 {
+				if x+d.X < 0 || x+d.X >= len(board[y]) {
 					continue
 				}
-				if x+dx >= len(board[y]) {
+				if y+d.Y < 0 || y+d.Y >= len(board) {
 					continue
 				}
-				if y+dy < 0 {
-					continue
-				}
-				if y+dy >= len(board) {
-					continue
-				}
-				if board[y+dy][x+dx] <= v {
-					// log.Println("bad", x, y, v, board[y+dy][x+dx])
+				if board[y+d.Y][x+d.X] <= v {
 					bad = true
-					break out
+					break
 				}
 			}
 			if !bad {
@@ -104,7 +98,6 @@ func day9(filepath string) {
 			}
 		}
 	}
-	// fmt.Println(low)
 	part1 := 0
 	for _, v := range low {
 		part1 += v + 1
