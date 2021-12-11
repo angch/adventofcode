@@ -46,6 +46,9 @@ func day11(filepath string) {
 
 		for len(eval) > 0 {
 			c, eval = eval[len(eval)-1], eval[:len(eval)-1]
+			if flashed[c] {
+				continue
+			}
 			flashed[c] = true
 			board[c] = 0
 			if step <= 100 {
