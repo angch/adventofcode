@@ -36,31 +36,31 @@ func day11(filepath string) {
 
 	for step := 1; ; step++ {
 		flashed := make(map[Coord]bool)
+		eval := make([]Coord, 0)
 		for c, _ := range board {
 			board[c]++
+			if board[c] > 9 {
+				eval = append(eval, c)
+			}
 		}
-		again := true
 
-		for again {
-			again = false
-
-			for c, v := range board {
-				if v > 9 {
-					flashed[c] = true
-					board[c] = 0
-					if step <= 100 {
-						part1++
-					}
-					for _, d := range adj {
-						c2 := Coord{c.X + d.X, c.Y + d.Y}
-						_, ok := board[c2]
-						if !ok {
-							continue
-						}
-						if !flashed[c2] {
-							board[c2]++
-							again = true
-						}
+		for len(eval) > 0 {
+			c, eval = eval[len(eval)-1], eval[:len(eval)-1]
+			flashed[c] = true
+			board[c] = 0
+			if step <= 100 {
+				part1++
+			}
+			for _, d := range adj {
+				c2 := Coord{c.X + d.X, c.Y + d.Y}
+				_, ok := board[c2]
+				if !ok {
+					continue
+				}
+				if !flashed[c2] {
+					board[c2]++
+					if board[c2] > 9 {
+						eval = append(eval, c2)
 					}
 				}
 			}
