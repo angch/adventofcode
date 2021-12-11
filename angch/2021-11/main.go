@@ -31,18 +31,10 @@ func day11(filepath string) {
 		}
 		c = Coord{0, c.Y + 1}
 	}
-	// fmt.Println(board)
 
-	// areas := make([]int, 0)
-	part1 := 0
-	part2 := 0
-
-	// next:
+	part1, part2 := 0, 0
 
 	for step := 1; ; step++ {
-		// board2 := board
-		// fmt.Println("Step", step)
-
 		flashed := make(map[Coord]bool)
 		for c, _ := range board {
 			board[c]++
@@ -89,11 +81,6 @@ func day11(filepath string) {
 	}
 
 	fmt.Println("Part 1", part1)
-	// sort.Ints(areas)
-	// part2 := 1
-	// for k := 0; k < 3; k++ {
-	// 	part2 *= areas[len(areas)-1-k]
-	// }
 	fmt.Println("Part 2", part2)
 }
 
