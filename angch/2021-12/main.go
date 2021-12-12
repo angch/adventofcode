@@ -158,6 +158,7 @@ func visit2(nodeEdge map[string]map[string]bool, start, end string) [][]string {
 
 			if k == start {
 				out = append(out, path2)
+				continue
 			}
 			eval = append(eval, path2)
 		}
