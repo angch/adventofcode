@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const startId, endId = 1, 2
+
 func day12(filepath string) {
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -18,60 +20,45 @@ func day12(filepath string) {
 
 	edge := make(map[int][]int)
 	node := make(map[string]int)
-	nodeid := 3
-	node["start"] = 1
-	node["end"] = 2
+	nodeid := endId + 1
+	node["start"] = startId
+	node["end"] = endId
 	isSmall := make(map[int]bool)
-	isSmall[1] = true
-	isSmall[2] = true
+	isSmall[startId] = true
+	isSmall[endId] = true
 	for scanner.Scan() {
 		a := strings.Split(scanner.Text(), "-")
-		// from, to := a[0], a[1]
-		_, ok := node[a[0]]
-		if !ok {
-			node[a[0]] = nodeid
-			if a[0][0] >= 'a' && a[0][0] <= 'z' {
-				isSmall[nodeid] = true
-			} else {
-				isSmall[nodeid] = false
+		for _, n := range a {
+			// Enumerate all seen nodes
+			nid, ok := node[n]
+			if !ok {
+				node[n] = nodeid
+				isSmall[nodeid] = n[0] >= 'a' && n[0] <= 'z'
+				nid = nodeid
+				nodeid++
 			}
-			nodeid++
-		}
-		_, ok = node[a[1]]
-		if !ok {
-			node[a[1]] = nodeid
-			if a[1][0] >= 'a' && a[1][0] <= 'z' {
-				isSmall[nodeid] = true
-			} else {
-				isSmall[nodeid] = false
+			_, ok = edge[nid]
+			if !ok {
+				edge[nid] = make([]int, 0, 1)
 			}
-			nodeid++
 		}
-
 		from, to := node[a[0]], node[a[1]]
-		_, ok = edge[from]
-		if !ok {
-			edge[from] = make([]int, 0, 1)
-		}
-		_, ok = edge[to]
-		if !ok {
-			edge[to] = make([]int, 0, 1)
-		}
 		edge[to] = append(edge[to], from)
 		edge[from] = append(edge[from], to)
 	}
 
 	part1, part2 := 0, 0
-	eval := [][]int{{node["end"]}}
+	// We start at the end
+	eval := [][]int{{endId}}
 
 	for len(eval) > 0 {
 		var path []int
 		path, eval = eval[len(eval)-1], eval[:len(eval)-1]
-		slicecnt := make([]int, nodeid)
+		visitedCount := make([]int, nodeid)
 		hasSmall := false
 		for _, v := range path {
-			slicecnt[v]++
-			if slicecnt[v] > 1 {
+			visitedCount[v]++
+			if visitedCount[v] > 1 {
 				if isSmall[v] {
 					hasSmall = true
 				}
@@ -80,25 +67,25 @@ func day12(filepath string) {
 
 		end := path[len(path)-1]
 		for _, k := range edge[end] {
-			c := slicecnt[k]
+			c := visitedCount[k]
 			if k != 1 && k != 2 {
-				if isSmall[k] {
-					// Small cave
-					if c > 0 && hasSmall {
-						continue
-					}
+				if isSmall[k] && c > 0 && hasSmall {
+					continue
 				}
 			} else if c > 0 {
 				continue
 			}
 
-			if k == 1 {
+			// ... and end at the start
+			if k == startId {
 				if !hasSmall {
 					part1++
 				}
 				part2++
 				continue
 			}
+
+			// path appended to eval needs to be a copy
 			path2 := make([]int, len(path), len(path)+1)
 			copy(path2, path)
 			path2 = append(path2, k)
@@ -113,7 +100,7 @@ func day12(filepath string) {
 func main() {
 	// day12("test.txt")
 	// day12("test2.txt")
-	t1 := time.Now()
+	t1 := time.Now() // For the purpose of running on machines without `time` aka Windows
 	day12("input.txt")
 	d1 := time.Since(t1)
 	fmt.Println("Duration", d1)
