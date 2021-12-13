@@ -42,66 +42,45 @@ func day13(filepath string) {
 	part1 := 0
 	for scanner.Scan() {
 		instr := scanner.Text()
-		xy := ""
-		cord := 0
-		c := Coord{0, 0}
 		instr = strings.ReplaceAll(instr, "fold along ", "")
 		a := strings.Split(instr, "=")
-		cord, _ = strconv.Atoi(a[1])
-		xy = a[0]
+		fold, _ := strconv.Atoi(a[1])
+		xy := a[0]
+
 		if xy == "y" {
-			c.Y = cord
+			for c := range board {
+				if c.Y >= fold {
+					y := fold - (c.Y - fold)
+					board[Coord{c.X, y}] = true
+					delete(board, c)
+				}
+			}
 		} else {
-			c.X = cord
-		}
-
-		board2 := board
-		for k, _ := range board2 {
-			if xy == "y" {
-				if k.Y >= cord {
-					y := cord - (k.Y - cord)
-					board[Coord{k.X, y}] = true
-					delete(board, k)
-				}
-			} else {
-				if k.X >= cord {
-					x := cord - (k.X - cord)
-					board[Coord{x, k.Y}] = true
-					delete(board, k)
+			for c := range board {
+				if c.X >= fold {
+					x := fold - (c.X - fold)
+					board[Coord{x, c.Y}] = true
+					delete(board, c)
 				}
 			}
 		}
-
 		if part1 == 0 {
-			for y := 0; y <= maxY; y++ {
-				for x := 0; x <= maxX; x++ {
-					if board[Coord{x, y}] {
-						part1++
-					}
-				}
-			}
+			part1 = len(board)
 		}
 	}
 	fmt.Println("Part 1", part1)
 
-	minX, minY := maxX, maxY
 	maxX, maxY = 0, 0
 	for c := range board {
-		if c.X < minX {
-			minX = c.X
-		}
-		if c.Y < minY {
-			minY = c.Y
+		if c.X > maxX {
+			maxX = c.X
 		}
 		if c.Y > maxY {
 			maxY = c.Y
 		}
-		if c.X > maxX {
-			maxX = c.X
-		}
 	}
-	for y := minY; y <= maxY; y++ {
-		for x := minX; x <= maxX; x++ {
+	for y := 0; y <= maxY; y++ {
+		for x := 0; x <= maxX; x++ {
 			if board[Coord{x, y}] {
 				fmt.Print("##")
 			} else {
@@ -111,8 +90,6 @@ func day13(filepath string) {
 		}
 		fmt.Println()
 	}
-	// fmt.Println(board)
-
 }
 
 func main() {
