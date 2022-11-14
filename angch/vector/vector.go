@@ -7,6 +7,8 @@ type Num interface {
 	comparable
 }
 
+// can't use constant int as param (it's a value, not a type),
+// to specify the dimensions of the vector, so I hard coded it as 3.
 type Point[T Num] [3]T
 
 func New3[T Num](v1, v2, v3 T) Point[T] {
