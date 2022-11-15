@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -394,6 +395,7 @@ func day18(filepath string) {
 
 		snums := make([]*SNum, 0)
 		t1 := time.Now()
+
 		scanner.Scan()
 		t := scanner.Text()
 		p, _ := ParseSNum(t)
@@ -420,17 +422,30 @@ func day18(filepath string) {
 
 		// Part 2, len of snums is 100, so we're doing 10000 - 100 evaluations
 		largest, large1, large2 := 0, 0, 0
+		resultChan := make(chan struct{ i, j, m int }, 10)
+		wg := sync.WaitGroup{}
 		for i := 0; i < len(snums); i++ {
 			for j := 0; j < len(snums); j++ {
 				if i == j {
 					continue
 				}
-				p = AddSNum(snums[i].DeepClone(), snums[j].DeepClone())
-				p = p.Reduce()
-				m := p.Magnitude()
-				if m > largest {
-					largest, large1, large2 = m, i, j
-				}
+				wg.Add(1)
+				go func(i, j int, ch chan struct{ i, j, m int }, wg *sync.WaitGroup) {
+					p = AddSNum(snums[i].DeepClone(), snums[j].DeepClone())
+					p = p.Reduce()
+					ch <- struct{ i, j, m int }{i, j, p.Magnitude()}
+					wg.Done()
+				}(i, j, resultChan, &wg)
+			}
+		}
+		go func() {
+			wg.Wait()
+			close(resultChan)
+		}()
+
+		for r := range resultChan {
+			if r.m > largest {
+				largest, large1, large2 = r.m, r.i, r.j
 			}
 		}
 		fmt.Println("Part 2", largest, large1, large2)
@@ -460,7 +475,7 @@ func main() {
 	t1 := time.Now()
 	// day18("test.txt")
 	// day18("test2.txt")
-	day18("input.txt")
+	day18("../input.txt")
 	d1 := time.Since(t1)
 	fmt.Println("Duration", d1)
 }
