@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
@@ -32,21 +33,17 @@ var response = map[string][]string{
 }
 
 func day2(file string) (int, int) {
-	count1, count2 := 0, 0
+	part1, part2 := 0, 0
 	f, _ := os.Open(file)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
-	// elf := make([]int, 0)
-	// cal := 0
-	score := 0
-	score2 := 0
 	for scanner.Scan() {
 		t := scanner.Text()
 		lr := strings.Split(t, " ")
 		l, r := lr[0], lr[1]
 
 		roundscore := win[l+r] + shapescore[r]
-		score += roundscore
+		part1 += roundscore
 
 		i, j := 0, 0
 		switch r {
@@ -57,30 +54,17 @@ func day2(file string) (int, int) {
 		case "Z":
 			i, j = 2, 6
 		}
-		// fmt.Println(i)
-
 		resp := response[l][i]
-		// log.Println(l, "x", r, roundscore, resp)
-		score2 += shapescore[resp] + j
-
-		// if t == "" {
-		// 	elf = append(elf, -cal)
-		// 	cal = 0
-		// 	continue
-		// }
-		// c, _ := strconv.Atoi(t)
-		// cal += c
+		part2 += shapescore[resp] + j
 	}
-	count1 = score
-	count2 = score2
-	// _ = co
-	return count1, count2
-	// sort.Ints(elf)
-	// count1 = elf[0]
-	// count2 = elf[0] + elf[1] + elf[2]
+	return part1, part2
 }
 
 func main() {
-	fmt.Println(day2("test.txt"))
+	part1, part2 := day2("test.txt")
+	if part1 != 15 || part2 != 12 {
+		log.Fatal("Test failed")
+	}
+	fmt.Println(part1, part2)
 	fmt.Println(day2("input.txt"))
 }
