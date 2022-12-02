@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 
 fn main() {
-    assert!(day1("../test.txt") == (24000, 41000));
+    assert!(day1("../test.txt") == (24000, 45000));
     day1("../input.txt");
 }
 
@@ -22,7 +22,7 @@ fn day1(filename: &str) -> (i32, i32) {
                 cal += x;
             }
         });
-    if cal < 0 {
+    if cal > 0 {
         elfs.push(-cal);
     }
     elfs.sort();
