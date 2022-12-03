@@ -23,7 +23,9 @@ func day3(file string) (int, int) {
 	f, _ := os.Open(file)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
-	group := map[byte]byte{}
+	emptygroup := [53]byte{}
+	emptybool := [53]bool{}
+	group := emptygroup
 	g := 0
 a:
 	for scanner.Scan() {
@@ -42,11 +44,11 @@ a:
 					break
 				}
 			}
-			group = map[byte]byte{}
+			group = emptygroup
 			g = 0
 		}
 
-		c := make(map[byte]bool)
+		c := emptybool
 		for i := 0; i < len(t)/2; i++ {
 			c[tr(t[i])] = true
 		}
