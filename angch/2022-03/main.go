@@ -7,15 +7,12 @@ import (
 	"os"
 )
 
+// Note: tr is inlined by Go.
 func tr(b byte) byte {
 	if b >= 'a' && b <= 'z' {
 		return b - 'a' + 1
 	}
-	if b >= 'A' && b <= 'Z' {
-		return b - 'A' + 1 + 26
-	}
-	log.Fatal(b)
-	return 0
+	return b - 'A' + 1 + 26
 }
 
 func day3(file string) (int, int) {
@@ -23,31 +20,29 @@ func day3(file string) (int, int) {
 	f, _ := os.Open(file)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
-	emptygroup := [53]byte{}
-	emptybool := [53]bool{}
-	group := emptygroup
-	g := 0
-a:
+	emptybool, emptygroup := [53]bool{}, [53]byte{}
+	g, group := byte(1), emptygroup
 	for scanner.Scan() {
 		t := scanner.Text()
-		if g != 2 {
-			mask := byte(1 << g)
+
+		// Part 2. Note "g" is a bitmask
+		if g != 4 {
 			for _, c := range t {
-				group[tr(byte(c))] |= mask
+				group[tr(byte(c))] |= g
 			}
-			g++
+			g <<= 1
 		} else {
 			for _, c := range t {
 				pr := tr(byte(c))
-				if group[pr] == 3 {
+				if group[pr] == g-1 {
 					part2 += int(pr)
 					break
 				}
 			}
-			group = emptygroup
-			g = 0
+			g, group = 1, emptygroup
 		}
 
+		// Part 1
 		c := emptybool
 		for i := 0; i < len(t)/2; i++ {
 			c[tr(t[i])] = true
@@ -56,11 +51,10 @@ a:
 			pr := tr(t[i])
 			if c[pr] {
 				part1 += int(pr)
-				continue a
+				break
 			}
 		}
 	}
-
 	return part1, part2
 }
 
