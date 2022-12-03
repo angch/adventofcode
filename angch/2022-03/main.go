@@ -24,28 +24,26 @@ func day3(file string) (int, int) {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	group := map[byte]byte{}
-	g := 2
+	g := 0
 a:
 	for scanner.Scan() {
-		g = (g + 1) % 3
-		if g == 0 {
-			// We looped back to the first member in the group, so we can look for
-			// the group's dupes
-			for k, v := range group {
-				if v == 7 {
-					part2 += int(k)
+		t := scanner.Text()
+		if g != 2 {
+			mask := byte(1 << g)
+			for _, c := range t {
+				group[tr(byte(c))] |= mask
+			}
+			g++
+		} else {
+			for _, c := range t {
+				pr := tr(byte(c))
+				if group[pr] == 3 {
+					part2 += int(pr)
 					break
 				}
 			}
 			group = map[byte]byte{}
-		}
-
-		t := scanner.Text()
-
-		for i := 0; i < len(t); i++ {
-			p := group[tr(t[i])]
-			p |= 1 << g
-			group[tr(t[i])] = p
+			g = 0
 		}
 
 		c := make(map[byte]bool)
@@ -58,13 +56,6 @@ a:
 				part1 += int(pr)
 				continue a
 			}
-		}
-	}
-	// Check the last group
-	for k, v := range group {
-		if v == 7 {
-			part2 += int(k)
-			break
 		}
 	}
 
