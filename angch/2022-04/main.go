@@ -14,18 +14,16 @@ func day4(file string) (int, int) {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		t := scanner.Text()
-		x1, y1, x2, y2 := 0, 0, 0, 0
+		var x1, y1, x2, y2 int
 		fmt.Sscanf(t, "%d-%d,%d-%d", &x1, &x2, &y1, &y2)
-		_ = t
 		if y2-y1 > x2-x1 {
 			x1, x2, y1, y2 = y1, y2, x1, x2
 		}
-		// log.Println(x1, x2, y1, y2)
-		if y2 >= x1 && y1 <= x2 && y2 <= x2 && y1 >= x1 {
-			part1++
-		}
 		if y2 >= x1 && y1 <= x2 {
 			part2++
+			if y2 <= x2 {
+				part1++
+			}
 		}
 	}
 	return part1, part2 // 635 not
