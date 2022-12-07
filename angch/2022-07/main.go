@@ -12,22 +12,14 @@ import (
 
 var verbose = false
 
-type entry struct {
-	dir  string
-	name string
-	size int
-}
-
 func day7(file string) (int, int) {
 	part1, part2 := 0, 0
 	f, _ := os.Open(file)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
-	curdir := ""
-	files := make([]entry, 0)
+	curdir, cmd := "", ""
 	dirsize := make(map[string]int)
-	cmd := ""
 	for scanner.Scan() {
 		t := scanner.Text()
 
@@ -42,33 +34,23 @@ func day7(file string) (int, int) {
 						a := strings.Split(curdir, "/")
 						a = a[:len(a)-1]
 						curdir = strings.Join(a, "/")
-					} else if strings.HasSuffix(curdir, "/") {
-						curdir += words[2]
 					} else {
 						curdir += "/" + words[2]
 					}
-					if curdir == "" {
-						curdir = "/"
-					}
+				}
+				if curdir == "/" {
+					curdir = ""
 				}
 				dirsize[curdir] += 0
 				cmd = ""
 			case "ls":
 				cmd = "ls"
-			default:
-				cmd = ""
 			}
 		} else {
 			switch cmd {
 			case "ls":
-				if words[0] == "dir" {
-
-				} else {
+				if words[0] != "dir" {
 					size, _ := strconv.Atoi(words[0])
-					name := words[1]
-					e := entry{curdir, name, size}
-					files = append(files, e)
-
 					dirs := strings.Split(curdir, "/")
 					for k := 0; k < len(dirs); k++ {
 						dirsize[strings.Join(dirs[0:k+1], "/")] += size
@@ -78,18 +60,14 @@ func day7(file string) (int, int) {
 		}
 		if verbose {
 			fmt.Println("After ", t)
-			fmt.Println("curdir ", curdir, "curcmd", cmd)
-			fmt.Println("files", files)
+			fmt.Println("curdir[", curdir, "] curcmd [", cmd, "]")
 		}
 	}
 	if verbose {
 		fmt.Println(dirsize)
 	}
 	sizes := make([]int, 0)
-	for k, v := range dirsize {
-		if k == "/" {
-			continue
-		}
+	for _, v := range dirsize {
 		if v < 100000 {
 			part1 += v
 		}
