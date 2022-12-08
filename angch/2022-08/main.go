@@ -27,7 +27,6 @@ func day8(file string) (int, int) {
 		y++
 	}
 
-	bestscore := 0
 	for c := range grid {
 		score, donepart1 := 1, false
 		for _, d := range directions {
@@ -51,11 +50,10 @@ func day8(file string) (int, int) {
 				part1++
 			}
 		}
-		if score > bestscore {
-			bestscore = score
+		if score > part2 {
+			part2 = score
 		}
 	}
-	part2 = bestscore
 	return part1, part2
 }
 
