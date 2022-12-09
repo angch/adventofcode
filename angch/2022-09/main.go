@@ -10,7 +10,6 @@ import (
 
 type coord [2]int
 
-var directions = []coord{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 var m = map[string]coord{
 	"R": {1, 0},
 	"U": {0, -1},
@@ -29,8 +28,7 @@ func sim(dir string, dist int, ropes []coord, visit map[coord]bool) {
 				prev = ropes[k]
 			}
 
-			dx := prev[0] - rope[0]
-			dy := prev[1] - rope[1]
+			dx, dy := prev[0]-rope[0], prev[1]-rope[1]
 			adx := dx
 			if adx < 0 {
 				adx = -adx
@@ -39,7 +37,6 @@ func sim(dir string, dist int, ropes []coord, visit map[coord]bool) {
 			if ady < 0 {
 				ady = -ady
 			}
-			// diff := adx + ady
 			if adx > 1 || ady > 1 || adx+ady > 2 {
 				if dx > 0 {
 					dx = 1
@@ -64,15 +61,10 @@ func sim(dir string, dist int, ropes []coord, visit map[coord]bool) {
 func day9(file string) (int, int) {
 	part1, part2 := 0, 0
 
-	// head := coord{0, 0}
-	// tail := coord{0, 0}
-
 	f, _ := os.Open(file)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
-	// grid := make(map[coord]int)
-	// y := 0
 	ropes1 := make([]coord, 2)
 	visit1 := map[coord]bool{}
 	ropes2 := make([]coord, 10)
@@ -81,13 +73,8 @@ func day9(file string) (int, int) {
 		t := scanner.Text()
 		dir, dist_ := t[:1], t[2:]
 		dist, _ := strconv.Atoi(dist_)
-
-		// visit1[tail] = true
 		sim(dir, dist, ropes1, visit1)
 		sim(dir, dist, ropes2, visit2)
-		// fmt.Println(head, tail)
-		// }
-
 	}
 	part1 = len(visit1)
 	part2 = len(visit2)
