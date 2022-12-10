@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -18,7 +17,7 @@ func day7(file string) (int, int) {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
-	curdir, cmd := "", ""
+	curdir, cmd := []string{}, ""
 	dirsize := make(map[string]int)
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -28,20 +27,14 @@ func day7(file string) (int, int) {
 			switch words[1] {
 			case "cd":
 				if strings.HasPrefix(words[2], "/") {
-					curdir = words[2]
+					curdir = strings.Split(words[2], "/")[1:]
 				} else {
 					if words[2] == ".." {
-						a := strings.Split(curdir, "/")
-						a = a[:len(a)-1]
-						curdir = strings.Join(a, "/")
+						curdir = curdir[:len(curdir)-1]
 					} else {
-						curdir += "/" + words[2]
+						curdir = append(curdir, words[2])
 					}
 				}
-				if curdir == "/" {
-					curdir = ""
-				}
-				dirsize[curdir] += 0
 				cmd = ""
 			case "ls":
 				cmd = "ls"
@@ -51,9 +44,8 @@ func day7(file string) (int, int) {
 			case "ls":
 				if words[0] != "dir" {
 					size, _ := strconv.Atoi(words[0])
-					dirs := strings.Split(curdir, "/")
-					for k := 0; k < len(dirs); k++ {
-						dirsize[strings.Join(dirs[0:k+1], "/")] += size
+					for k := range curdir {
+						dirsize[strings.Join(curdir[:k+1], "/")] += size
 					}
 				}
 			}
@@ -66,24 +58,20 @@ func day7(file string) (int, int) {
 	if verbose {
 		fmt.Println(dirsize)
 	}
-	sizes := make([]int, 0)
+	bestSize := dirsize[""]
+	disk := 30000000 - (70000000 - bestSize)
+	if verbose {
+		log.Println("looking for disk", disk)
+	}
 	for _, v := range dirsize {
 		if v < 100000 {
 			part1 += v
 		}
-		sizes = append(sizes, v)
-	}
-	sort.Ints(sizes)
-	disk := 30000000 - (70000000 - dirsize[""])
-	if verbose {
-		log.Println("looking for disk", disk)
-	}
-	for _, v := range sizes {
-		if v > disk {
-			part2 = v
-			break
+		if v > disk && v < bestSize {
+			bestSize = v
 		}
 	}
+	part2 = bestSize
 	return part1, part2
 }
 
