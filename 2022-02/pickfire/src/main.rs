@@ -52,7 +52,7 @@ fn main() {
         score1 += /* round */ (!op - 1 + me) % 3 * 3 + /* choice */ me + 1;
         score2 += /* round */ me * 3 + /* choice */ (me + op + 4) % 3 + 1;
     }
-    println!("{} {}", score1, score2);
+    println!("{score1} {score2}");
 }
 
 // old code
@@ -118,6 +118,6 @@ fn main() {
 //         score1 += round_score(op, me1) + choice_score(me1);
 //         score2 += round_score(op, me2) + choice_score(me2);
 //     }
-//     println!("{} {}", score1, score2);
+//     println!("{score1} {score2}");
 //     Ok(())
 // }

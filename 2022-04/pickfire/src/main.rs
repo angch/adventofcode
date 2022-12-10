@@ -21,5 +21,5 @@ fn main() {
             part2 += 1;
         }
     }
-    println!("{} {}", part1, part2);
+    println!("{part1} {part2}");
 }

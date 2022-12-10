@@ -34,5 +34,5 @@ fn main() {
     }
     let part1: String = stacks1.values().map(|s| s.last().unwrap()).collect();
     let part2: String = stacks2.values().map(|s| s.last().unwrap()).collect();
-    println!("{} {}", part1, part2);
+    println!("{part1} {part2}");
 }

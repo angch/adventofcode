@@ -27,5 +27,5 @@ fn main() {
         })
         .sum();
     let part2: u32 = lines.chunks(3).map(find_same).sum();
-    println!("{} {}", part1, part2);
+    println!("{part1} {part2}");
 }
