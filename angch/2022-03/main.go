@@ -7,12 +7,12 @@ import (
 	"os"
 )
 
-// Note: tr is inlined by Go.
+// Note: tr is inlined by Go. (canInlineFunction(cost: 18)optimizer details)
 func tr(b byte) byte {
-	if b >= 'a' && b <= 'z' {
-		return b - 'a' + 1
+	if b <= 'Z' {
+		return b - 'A' + 1 + 26
 	}
-	return b - 'A' + 1 + 26
+	return b - 'a' + 1
 }
 
 func day3(file string) (int, int) {
