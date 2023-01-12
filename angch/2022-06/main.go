@@ -52,7 +52,9 @@ func day6io2(f io.Reader) (int, int) {
 
 	t, _ := io.ReadAll(f)
 	count1 := make([]int, 26)
+	count1overflow := 0
 	count2 := make([]int, 26)
+	count2overflow := 0
 
 	for i := 0; i < len(t); i++ {
 		c := t[i] - 'a'
@@ -60,42 +62,36 @@ func day6io2(f io.Reader) (int, int) {
 		// Part1
 		if part1 == 0 {
 			count1[c]++
+			if count1[c] == 2 {
+				count1overflow++
+			}
 
 			if i >= 4 {
 				c2 := t[i-4] - 'a'
 				count1[c2]--
+				if count1[c2] == 1 {
+					count1overflow--
+				}
 			}
-			if i >= 3 {
-				dupe1 := false
-				for _, v2 := range count1 {
-					if v2 > 1 {
-						dupe1 = true
-						break
-					}
-				}
-				if !dupe1 {
-					part1 = i + 1
-				}
+			if i >= 3 && count1overflow <= 0 {
+				part1 = i + 1
 			}
 		}
 
 		// Part2
 		count2[c]++
+		if count2[c] == 2 {
+			count2overflow++
+		}
 		if i >= 14 {
 			c2 := t[i-14] - 'a'
 			count2[c2]--
+			if count2[c2] == 1 {
+				count2overflow--
+			}
 		}
-		if i >= 13 {
-			dupe2 := false
-			for _, v2 := range count2 {
-				if v2 > 1 {
-					dupe2 = true
-					break
-				}
-			}
-			if !dupe2 {
-				return part1, i + 1
-			}
+		if i >= 13 && count2overflow <= 0 {
+			return part1, i + 1
 		}
 	}
 	return part1, part2
