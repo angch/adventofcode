@@ -3,16 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
 
 var verbose = false
 
-func day6(file string) (int, int) {
+func day6io(f io.Reader) (int, int) {
 	part1, part2 := 0, 0
-	f, _ := os.Open(file)
-	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
 	for scanner.Scan() {
@@ -47,6 +46,65 @@ func day6(file string) (int, int) {
 	}
 
 	return part1, part2 // 635 not
+}
+func day6io2(f io.Reader) (int, int) {
+	part1, part2 := 0, 0
+
+	t, _ := io.ReadAll(f)
+	count1 := make([]int, 26)
+	count2 := make([]int, 26)
+
+	for i := 0; i < len(t); i++ {
+		c := t[i] - 'a'
+
+		// Part1
+		if part1 == 0 {
+			count1[c]++
+
+			if i >= 4 {
+				c2 := t[i-4] - 'a'
+				count1[c2]--
+			}
+			if i >= 3 {
+				dupe1 := false
+				for _, v2 := range count1 {
+					if v2 > 1 {
+						dupe1 = true
+						break
+					}
+				}
+				if !dupe1 {
+					part1 = i + 1
+				}
+			}
+		}
+
+		// Part2
+		count2[c]++
+		if i >= 14 {
+			c2 := t[i-14] - 'a'
+			count2[c2]--
+		}
+		if i >= 13 {
+			dupe2 := false
+			for _, v2 := range count2 {
+				if v2 > 1 {
+					dupe2 = true
+					break
+				}
+			}
+			if !dupe2 {
+				return part1, i + 1
+			}
+		}
+	}
+	return part1, part2
+}
+
+func day6(file string) (int, int) {
+	f, _ := os.Open(file)
+	defer f.Close()
+	return day6io2(f)
 }
 
 func main() {
