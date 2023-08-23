@@ -1,28 +1,29 @@
 module github.com/angch/adventofcode/angch
 
-go 1.19
+go 1.21
 
 require (
-	github.com/gdamore/tcell/v2 v2.5.3
+	github.com/gdamore/tcell/v2 v2.6.0
+	github.com/google/go-cmp v0.5.9
 	github.com/h2so5/goback v0.0.0-20150302055225-6e210305bfc9
-	github.com/hajimehoshi/ebiten/v2 v2.4.12
+	github.com/hajimehoshi/ebiten/v2 v2.5.7
+	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 )
 
 require (
-	github.com/ebitengine/purego v0.1.0 // indirect
+	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/ebitengine/purego v0.4.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
-	github.com/hajimehoshi/file2byteslice v1.0.0 // indirect
 	github.com/jezek/xgb v1.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-runewidth v0.0.14 // indirect
-	github.com/rivo/uniseg v0.4.2 // indirect
-	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
-	golang.org/x/exp/shiny v0.0.0-20221108223516-5d533826c662 // indirect
-	golang.org/x/image v0.1.0 // indirect
-	golang.org/x/mobile v0.0.0-20221020085226-b36e6246172e // indirect
-	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/term v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
+	golang.org/x/exp/shiny v0.0.0-20230817173708-d852ddb80c63 // indirect
+	golang.org/x/image v0.11.0 // indirect
+	golang.org/x/mobile v0.0.0-20230818142238-7088062f872d // indirect
+	golang.org/x/sync v0.3.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/term v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 )
