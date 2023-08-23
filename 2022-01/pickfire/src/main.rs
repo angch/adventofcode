@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let count1 = heap.peek().unwrap();
     let count2: u32 = heap.iter().take(3).sum();
-    println!("{} {}", count1, count2);
+    println!("{count1} {count2}");
 
     Ok(())
 }

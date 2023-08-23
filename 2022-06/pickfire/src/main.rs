@@ -8,5 +8,5 @@ fn main() {
     };
     let part1 = uniq(4);
     let part2 = uniq(14);
-    println!("{} {}", part1, part2);
+    println!("{part1} {part2}");
 }
