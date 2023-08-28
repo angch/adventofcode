@@ -62,16 +62,26 @@ func (s *Spans) Add(l, r int) Spans {
 func (s Spans) Compress() Spans {
 	// Yes, we should have done this as we're adding spans, not after.
 	// Deleting elements from the right to left means we avoid allocs.
+	// fmt.Println(" pp ", s)
+
 	for i := len(s) - 1; i > 0; i-- {
 		j := i - 1
 		a, b := s[j], s[i]
+		// fmt.Println("a b", a, b)
 		if a.R >= b.L-1 {
 			a.R = max(b.R, a.R)
+			// fmt.Println("new a", a)
 			s[j] = a
-			// Delete an element:
-			copy(s[:i], s[i+1:])
-			s = s[:len(s)-1]
 
+			// Delete an element:
+			copy(s[i:], s[i+1:])
+			s = s[:len(s)-1]
+			// s = append(s[:i], s[i+1:]...)
+
+			// if a.R >= b.L {
+			// 	fmt.Println("repeat")
+			// 	i++
+			// }
 			// Delete an element, badly:
 			//s = append(s[:i], s[i+1:]...)
 			// fmt.Println(" pp ", s)
@@ -232,7 +242,6 @@ func day15(file string, countRow int) (int, int) {
 			continue
 		}
 		slices.SortFunc[Spans](span, Compare)
-
 		span = span.Compress()
 		if len(span) == 1 && span[0].L == -1000 && span[0].R == 4000000 {
 			continue
@@ -254,12 +263,12 @@ func day15(file string, countRow int) (int, int) {
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	// part1, part2 := day15("test.txt", 10)
-	part1, part2 := day15alt("test.txt", 10)
+	part1, part2 := day15alt3("test.txt", 10)
 
 	fmt.Println(part1, part2)
 	if part1 != 26 || part2 != 56000011 {
 		log.Fatal("Bad test")
 	}
-	// fmt.Println(day15("input.txt", 2000000)) // 11062575042518 too low
+	// fmt.Println(day15("input.txt", 2000000))     // 11062575042518 too low
 	fmt.Println(day15alt("input.txt", 2000000)) // 11062575042518 too low
 }
