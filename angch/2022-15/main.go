@@ -23,10 +23,11 @@ type Span struct {
 type Spans []Span
 
 type Board struct {
-	Board map[Coord]rune
-	Spans map[int]Spans
-	Min   Coord
-	Max   Coord
+	Board  map[Coord]rune
+	Spans  map[int]Spans
+	Spans2 []Spans
+	Min    Coord
+	Max    Coord
 }
 
 func Compare(a, b Span) int {
@@ -60,25 +61,44 @@ func (s *Spans) Add(l, r int) Spans {
 
 func (s Spans) Compress() Spans {
 	// Yes, we should have done this as we're adding spans, not after.
+	// Deleting elements from the right to left means we avoid allocs.
 	for i := len(s) - 1; i > 0; i-- {
 		j := i - 1
 		a, b := s[j], s[i]
 		if a.R >= b.L-1 {
 			a.R = max(b.R, a.R)
 			s[j] = a
-			s = append(s[:i], s[i+1:]...)
+			// Delete an element:
+			copy(s[:i], s[i+1:])
+			s = s[:len(s)-1]
+
+			// Delete an element, badly:
+			//s = append(s[:i], s[i+1:]...)
 			// fmt.Println(" pp ", s)
 		}
 	}
 	return s
 }
 
-func NewBoard() *Board {
-	return &Board{make(map[Coord]rune), make(map[int]Spans), Coord{0, 0}, Coord{0, 0}}
+func NewBoard(max int) *Board {
+	return &Board{
+		make(map[Coord]rune),
+		make(map[int]Spans),
+		make([]Spans, max),
+		Coord{0, 0},
+		Coord{0, 0},
+	}
 }
 
-func (b *Board) Clone() *Board {
-	b2 := Board{make(map[Coord]rune), make(map[int]Spans), b.Min, b.Max}
+var maxRows = 4000000
+
+func (b *Board) Clone(max int) *Board {
+	b2 := Board{
+		make(map[Coord]rune),
+		make(map[int]Spans),
+		make([]Spans, max),
+		b.Min, b.Max,
+	}
 	for k, v := range b.Board {
 		b2.Board[k] = v
 	}
@@ -126,7 +146,7 @@ func day15(file string, countRow int) (int, int) {
 
 	scanner := bufio.NewScanner(f)
 
-	board := NewBoard()
+	board := NewBoard(maxRows + 1)
 	sensors := []Coord{}
 
 	for scanner.Scan() {
@@ -213,19 +233,7 @@ func day15(file string, countRow int) (int, int) {
 		}
 		slices.SortFunc[Spans](span, Compare)
 
-		if y == 10 {
-			fmt.Printf("b4 %d %v\n", y, span)
-		}
 		span = span.Compress()
-		// for i := 0; i < len(spans)-1; i++ {
-		// 	if spans[i][1] >= spans[i+1][0] {
-		// 		spans[i][1] = max(spans[i][1], spans[i+1][1])
-		// 		spans[i+1][0] = spans[i][0]
-		// 		spans[i+1][1] = spans[i][1]
-		// 		spans = append(spans[:i], spans[i+1:]...)
-		// 		i--
-		// 	}
-		// }
 		if len(span) == 1 && span[0].L == -1000 && span[0].R == 4000000 {
 			continue
 		}
@@ -234,10 +242,10 @@ func day15(file string, countRow int) (int, int) {
 				if span[i+1].L-span[i].R == 2 {
 					fmt.Printf("af %d %v\n", y, span)
 					fmt.Println("solution is", y, span[i].R+1, (span[i].R+1)*4000000+y)
+					part2 = (span[i].R+1)*4000000 + y
 				}
 			}
 		}
-		// fmt.Printf("af %d %v\n", y, span)
 	}
 
 	return part1, part2
@@ -245,11 +253,13 @@ func day15(file string, countRow int) (int, int) {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	part1, part2 := day15("test.txt", 10)
+	// part1, part2 := day15("test.txt", 10)
+	part1, part2 := day15alt("test.txt", 10)
 
 	fmt.Println(part1, part2)
-	if part1 != 26 || part2 != 0 {
+	if part1 != 26 || part2 != 56000011 {
 		log.Fatal("Bad test")
 	}
-	fmt.Println(day15("input.txt", 2000000)) // 11062575042518 too low
+	// fmt.Println(day15("input.txt", 2000000)) // 11062575042518 too low
+	fmt.Println(day15alt("input.txt", 2000000)) // 11062575042518 too low
 }

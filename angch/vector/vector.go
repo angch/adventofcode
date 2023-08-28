@@ -106,3 +106,27 @@ func CompassDirections[N Num]() []Point[N] {
 
 var CompassDirectionsInt = CompassDirections[int]()
 var CompassDirectionsFloat64 = CompassDirections[float64]()
+
+type SparseGrid[T Num, V any] map[Point[T]]V
+
+func NewSparseGrid[T Num, V any]() SparseGrid[T, V] {
+	return make(SparseGrid[T, V], 0)
+}
+
+type RasterGrid[T int, V any] [][]V
+
+func NewRasterGrid[T int, V any](size int) RasterGrid[T, V] {
+	g := make([][]V, size)
+	for i := 0; i < size; i++ {
+		g[i] = make([]V, size)
+	}
+	return g
+}
+
+func (g RasterGrid[T, V]) Set3(x, y, z T, v V) {
+	g[y][x] = v
+}
+
+func (g *RasterGrid[T, V]) Set(x, y T, v V) {
+	g.Set3(x, y, 0, v)
+}
