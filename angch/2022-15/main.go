@@ -68,8 +68,8 @@ func (s Spans) Compress() Spans {
 			c := 1
 			i2 := i + 1
 			for ; i2 < len(s); i2, c = i2+1, c+1 {
-				if s[i2].R > a.R {
-					if s[i2].L <= a.R {
+				if a.R < s[i2].R {
+					if a.R >= s[i2].L {
 						a.R = s[i2].R
 						continue
 					}
@@ -293,8 +293,8 @@ type test func(string, int) (int, int)
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	// part1, part2 := day15("test.txt", 10)
+	// for k, tf := range []test{day15, day15alt, day15alt2, day15alt3, day15alt4} {
 	for k, tf := range []test{day15, day15alt, day15alt2, day15alt3, day15alt4} {
-		// for k, tf := range []test{day15alt, day15alt3, day15alt4} {
 		fmt.Println("Testing", k, tf)
 		now := time.Now()
 		part1, part2 := tf("test.txt", 10)

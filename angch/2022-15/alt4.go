@@ -70,7 +70,7 @@ func day15alt4(file string, countRow int) (int, int) {
 			counts--
 		}
 	}
-	part1 = counts - 2
+	part1 = counts - 1
 	// log.Println("xxx", len(counts), len(board.Spans))
 
 	// part2
