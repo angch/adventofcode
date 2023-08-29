@@ -46,53 +46,40 @@ func Compare(a, b Span) int {
 }
 
 func NewSpans() Spans {
-	s := make(Spans, 0, 10)
+	s := make(Spans, 0, 8)
 	return s
 }
 
 func (s *Spans) Add(l, r int) Spans {
 	l, r = min(l, r), max(l, r)
-	// l, r = max(-4000000, l), min(r, 4000000)
+	// l, r = max(-4000000, l), min(r, 4000000*2)
 	return append(*s, Span{l, r})
 }
 
 func (s Spans) Compress() Spans {
 	// Yes, we should have done this as we're adding spans, not after.
 	// Deleting elements from the right to left means we avoid allocs.
-	// fmt.Println(" pp ", s)
 	for i := len(s) - 1; i > 0; i-- {
 		j := i - 1
 		a, b := s[j], s[i]
-		// fmt.Println("a b", a, b)
 		if a.R >= b.L-1 {
 			a.R = max(b.R, a.R)
-			// fmt.Println("new a", a)
-			s[j] = a
 
-			// Delete an element:
-			// copy(s[i:], s[i+1:])
-			// s = s[:len(s)-1]
-
-			// i2 := i
-			c := 0
-			i2 := i
-			for ; i2 < len(s); i2++ {
+			c := 1
+			i2 := i + 1
+			for ; i2 < len(s); i2, c = i2+1, c+1 {
 				if s[i2].R > a.R {
+					if s[i2].L <= a.R {
+						a.R = s[i2].R
+						continue
+					}
 					break
 				}
-				c++
 			}
+			s[j] = a
 
 			copy(s[i:], s[i2:])
 			s = s[:len(s)-c]
-
-			// if a.R >= b.L {
-			// 	fmt.Println("repeat")
-			// 	i++
-			// }
-			// Delete an element, badly:
-			//s = append(s[:i], s[i+1:]...)
-			// fmt.Println(" pp ", s)
 		}
 	}
 	return s
@@ -255,7 +242,7 @@ func day15(file string, countRow int) (int, int) {
 		}
 	}
 
-	fmt.Println("Span counting")
+	// fmt.Println("Span counting")
 	spans := board.Spans[countRow]
 	counts := make(map[int]bool)
 	for i := 0; i < len(spans); i++ {
@@ -270,7 +257,7 @@ func day15(file string, countRow int) (int, int) {
 	}
 	// board.Draw()
 	part1 = len(counts) - 1
-	log.Println("xxx", len(counts), len(board.Spans))
+	// log.Println("xxx", len(counts), len(board.Spans))
 
 	// part2
 	minY := max(board.Min.Y, 0)
@@ -289,8 +276,8 @@ p2:
 		if len(span) == 2 {
 			for i := 0; i < len(span)-1; i++ {
 				if span[i+1].L-span[i].R == 2 {
-					fmt.Printf("af %d %v\n", y, span)
-					fmt.Println("solution is", y, span[i].R+1, (span[i].R+1)*4000000+y)
+					// fmt.Printf("af %d %v\n", y, span)
+					// fmt.Println("solution is", y, span[i].R+1, (span[i].R+1)*4000000+y)
 					part2 = (span[i].R+1)*4000000 + y
 					break p2
 				}

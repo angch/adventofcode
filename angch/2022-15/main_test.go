@@ -38,6 +38,7 @@ func TestSpans_Compress(t *testing.T) {
 		{"2", Spans{{0, 10}, {9, 12}}, Spans{{0, 12}}},
 		{"3", Spans{{0, 20}, {9, 12}, {14, 15}}, Spans{{0, 20}}},
 		{"4", Spans{{0, 20}, {9, 12}, {14, 15}, {23, 24}}, Spans{{0, 20}, {23, 24}}},
+		{"5", Spans{{0, 20}, {9, 12}, {14, 15}, {19, 24}}, Spans{{0, 24}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
