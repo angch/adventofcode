@@ -1,0 +1,16 @@
+Valve LA has flow rate=22; tunnels lead to valves KA, MA
+Valve MA has flow rate=24; tunnels lead to valves LA, NA
+Valve NA has flow rate=26; tunnels lead to valves MA, OA
+Valve OA has flow rate=28; tunnels lead to valves NA, PA
+Valve PA has flow rate=30; tunnels lead to valves OA
+Valve AA has flow rate=0; tunnels lead to valves BA
+Valve BA has flow rate=2; tunnels lead to valves AA, CA
+Valve CA has flow rate=4; tunnels lead to valves BA, DA
+Valve DA has flow rate=6; tunnels lead to valves CA, EA
+Valve EA has flow rate=8; tunnels lead to valves DA, FA
+Valve FA has flow rate=10; tunnels lead to valves EA, GA
+Valve GA has flow rate=12; tunnels lead to valves FA, HA
+Valve HA has flow rate=14; tunnels lead to valves GA, IA
+Valve IA has flow rate=16; tunnels lead to valves HA, JA
+Valve JA has flow rate=18; tunnels lead to valves IA, KA
+Valve KA has flow rate=20; tunnels lead to valves JA, LA
