@@ -9,7 +9,7 @@ import (
 
 func (s *Spans) AddCompress(l, r int) Spans {
 	l, r = min(l, r), max(l, r)
-	l, r = max(-10, l), min(r, 4000000)
+	// l, r = max(-10, l), min(r, 4000000)
 
 	if len(*s) == 0 {
 		return append(*s, Span{l, r})
@@ -82,6 +82,7 @@ func day15alt(file string, countRow int) (int, int) {
 	// fmt.Println("Span counting")
 	spans := board.Spans2[countRow]
 	counts := 0
+	// fmt.Println("spans are", spans)
 	for i := 0; i < len(spans); i++ {
 		counts += spans[i].R - spans[i].L + 1
 	}

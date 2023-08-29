@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"slices"
 )
@@ -44,10 +45,6 @@ func Compare(a, b Span) int {
 	return 1
 }
 
-func Less(x, y Span) bool {
-	return true
-}
-
 func NewSpans() Spans {
 	s := make(Spans, 0, 10)
 	return s
@@ -55,11 +52,53 @@ func NewSpans() Spans {
 
 func (s *Spans) Add(l, r int) Spans {
 	l, r = min(l, r), max(l, r)
-	l, r = max(-1000, l), min(r, 4000000)
+	// l, r = max(-4000000, l), min(r, 4000000)
 	return append(*s, Span{l, r})
 }
 
 func (s Spans) Compress() Spans {
+	// Yes, we should have done this as we're adding spans, not after.
+	// Deleting elements from the right to left means we avoid allocs.
+	// fmt.Println(" pp ", s)
+	for i := len(s) - 1; i > 0; i-- {
+		j := i - 1
+		a, b := s[j], s[i]
+		// fmt.Println("a b", a, b)
+		if a.R >= b.L-1 {
+			a.R = max(b.R, a.R)
+			// fmt.Println("new a", a)
+			s[j] = a
+
+			// Delete an element:
+			// copy(s[i:], s[i+1:])
+			// s = s[:len(s)-1]
+
+			// i2 := i
+			c := 0
+			i2 := i
+			for ; i2 < len(s); i2++ {
+				if s[i2].R > a.R {
+					break
+				}
+				c++
+			}
+
+			copy(s[i:], s[i2:])
+			s = s[:len(s)-c]
+
+			// if a.R >= b.L {
+			// 	fmt.Println("repeat")
+			// 	i++
+			// }
+			// Delete an element, badly:
+			//s = append(s[:i], s[i+1:]...)
+			// fmt.Println(" pp ", s)
+		}
+	}
+	return s
+}
+
+func (s Spans) Compress2() Spans {
 	// Yes, we should have done this as we're adding spans, not after.
 	// Deleting elements from the right to left means we avoid allocs.
 	// fmt.Println(" pp ", s)
@@ -236,6 +275,7 @@ func day15(file string, countRow int) (int, int) {
 	// part2
 	minY := max(board.Min.Y, 0)
 	maxY := min(board.Max.Y, 4000000)
+p2:
 	for y := minY; y <= maxY; y++ {
 		span, ok := board.Spans[y]
 		if !ok {
@@ -252,6 +292,7 @@ func day15(file string, countRow int) (int, int) {
 					fmt.Printf("af %d %v\n", y, span)
 					fmt.Println("solution is", y, span[i].R+1, (span[i].R+1)*4000000+y)
 					part2 = (span[i].R+1)*4000000 + y
+					break p2
 				}
 			}
 		}
@@ -260,15 +301,26 @@ func day15(file string, countRow int) (int, int) {
 	return part1, part2
 }
 
+type test func(string, int) (int, int)
+
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	// part1, part2 := day15("test.txt", 10)
-	part1, part2 := day15alt3("test.txt", 10)
+	for k, tf := range []test{day15, day15alt, day15alt2, day15alt3, day15alt4} {
+		// for k, tf := range []test{day15alt, day15alt3, day15alt4} {
+		fmt.Println("Testing", k, tf)
+		now := time.Now()
+		part1, part2 := tf("test.txt", 10)
+		fmt.Println(part1, part2)
+		if part1 != 26 || part2 != 56000011 {
+			log.Fatal("Bad test, expect 26 and 56000011", k)
+		}
 
-	fmt.Println(part1, part2)
-	if part1 != 26 || part2 != 56000011 {
-		log.Fatal("Bad test")
+		part1, part2 = tf("input.txt", 2000000)
+		fmt.Println(part1, part2)
+		if part1 != 5127797 || part2 != 12518502636475 {
+			log.Fatal("Bad test, expect 5127797 and 12518502636475", k)
+		}
+		fmt.Println("Time taken for", k, "is", time.Since(now))
 	}
-	// fmt.Println(day15("input.txt", 2000000))     // 11062575042518 too low
-	fmt.Println(day15alt("input.txt", 2000000)) // 11062575042518 too low
 }
