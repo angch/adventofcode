@@ -11,10 +11,11 @@ import (
 )
 
 type Valve struct {
-	FlowRate    int
-	Tunnels     []string
-	TunnelIndex []int
-	Destination []int // To go to this valve, take this tunnel
+	FlowRate        int
+	Tunnels         []string
+	TunnelIndex     []int
+	Destination     []int // To go to this valve, take this tunnel
+	DestinationCost []int // To go to this valve, it is this far away
 }
 
 type State struct {
@@ -92,6 +93,7 @@ func day16part1(graph []Valve, start, allpressure int) int {
 		Minute:           1,
 		Location:         start,
 		CameFrom:         0,
+		HeadingTo:        -1,
 	})
 	_ = states
 
@@ -109,6 +111,9 @@ func day16part1(graph []Valve, start, allpressure int) int {
 			if k == 0 {
 				continue
 			}
+			if states[bestCandidate].ReleasedPressure < v.ReleasedPressure {
+				bestCandidate = k
+			}
 			if states[bestCandidate].PressurePerMin < v.PressurePerMin {
 				bestCandidate = k
 			} else if states[bestCandidate].PressurePerMin == v.PressurePerMin {
@@ -122,14 +127,26 @@ func day16part1(graph []Valve, start, allpressure int) int {
 		// states = append(states[:bestCandidate], states[bestCandidate+1:]...)
 		states[bestCandidate] = states[len(states)-1]
 		states = states[:len(states)-1]
-		evals++
-		// if evals%100000 == 0 {
-		// 	fmt.Println("Eval", evals)
-		// }
 
-		if state.Minute > bestTime && state.ReleasedPressure+(maxTime-state.Minute)*allpressure < bestRate {
+		if state.Minute >= bestTime && state.ReleasedPressure+(maxTime-state.Minute)*allpressure < bestRate {
 			continue
 		}
+		evals++
+		if evals%100000 == 0 {
+			fmt.Println("Eval", evals, len(states), bestTime, bestRate, state.Minute, state.ReleasedPressure)
+		}
+
+		// fmt.Println("Eval:", state.Minute, state.ReleasedPressure, state.Location, state.HeadingTo)
+
+		// state.HeadingTo = 9
+		// state.Location = 6
+		// for l := state.Location; l != state.HeadingTo; {
+		// 	fmt.Println("At ", l, "taking", graph[l].Destination[state.HeadingTo])
+		// 	l = graph[l].Destination[state.HeadingTo]
+		// }
+		// if true {
+		// 	log.Fatal("s")
+		// }
 
 		if state.Minute == maxTime {
 			// endstate = append(endstate, state)
@@ -176,24 +193,65 @@ func day16part1(graph []Valve, start, allpressure int) int {
 			// newState := state.Clone()
 			newState := state
 			newState.ValvesOpen |= (1 << l)
-			newState.CameFrom = 1 << l
 			newState.PressurePerMin += graph[l].FlowRate
+			newState.CameFrom = 1 << l
 			newState.Tick()
 			states = append(states, newState)
+			// continue
+		} else if vo == 1 && state.HeadingTo == l {
+			log.Fatal("what")
 		}
 
 		// Where can we go?
-		for _, v := range graph[l].TunnelIndex {
-			cf := (1 << v) & state.CameFrom
-			if cf != 0 {
+		// for _, v := range graph[l].TunnelIndex {
+		// 	cf := (1 << v) & state.CameFrom
+		// 	if cf != 0 {
+		// 		continue
+		// 	}
+		// 	// fmt.Println("Moving to", v, state.Minute, state.ReleasedPressure)
+		// 	newState := state
+		// 	newState.Location = v
+		// 	newState.CameFrom |= (1 << l)
+		// 	newState.Tick()
+		// 	states = append(states, newState)
+		// }
+
+		// Where to?
+		headTo := []int{}
+		if state.HeadingTo == -1 || state.HeadingTo == l {
+			closedValves := ^state.ValvesOpen
+			for destId, v := range graph {
+				if v.FlowRate == 0 {
+					continue
+				}
+				if destId == l {
+					continue
+				}
+				if (1<<destId)&closedValves != 0 {
+					if (1<<destId)&state.CameFrom == 0 {
+						headTo = append(headTo, destId)
+					}
+				}
+			}
+			// fmt.Println("Heading to", headTo, "from valve", l)
+		} else {
+			headTo = []int{state.HeadingTo}
+		}
+
+		// fmt.Println("Heading to", headTo, "from valve", l)
+		for _, v := range headTo {
+			tunnelId := graph[l].Destination[v]
+			if tunnelId == -1 {
 				continue
 			}
-			// fmt.Println("Moving to", v, state.Minute, state.ReleasedPressure)
 			newState := state
-			newState.Location = v
+			newState.Location = tunnelId
+			newState.HeadingTo = v
 			newState.CameFrom |= (1 << l)
 			newState.Tick()
+			// log.Println("At valve", l, "heading to", v, "using tunnel", tunnelId, "minute", newState.Minute, "pressure", newState.ReleasedPressure, newState.ValvesOpen)
 			states = append(states, newState)
+			// break
 		}
 
 	}
@@ -205,7 +263,7 @@ func day16part1(graph []Valve, start, allpressure int) int {
 	// fmt.Println("Maxflow", maxFlow)
 	// part1
 	part1 = maxFlow
-	fmt.Println("Time taken", time.Since(now), evals, "evals taken")
+	fmt.Println("Part1: Time taken", time.Since(now), evals, "evals taken, best time", bestTime)
 
 	return part1
 }
@@ -413,7 +471,7 @@ func RouteTo(from, to int, graph []Valve, visited uint64) int {
 	best := 9999999999
 	for _, v := range graph[from].TunnelIndex {
 		if visited&(1<<v) == 0 {
-			best = min(best, RouteTo(v, to, graph, visited|(1<<from)|(1<<v)))
+			best = min(best, 1+RouteTo(v, to, graph, visited|(1<<v)))
 		}
 	}
 	return best
@@ -471,16 +529,13 @@ func day16(file string) (int, int) {
 	for tunnelId, v := range graph {
 		// The choices are the ones in TunnelIndex, or -1
 		destination := make([]int, len(graph))
+		cost := make([]int, len(graph))
 
 		for destTunnelId := range destination {
 			if destTunnelId == tunnelId {
 				// We're already here
 				destination[destTunnelId] = -1
-				continue
-			}
-			if len(v.TunnelIndex) == 1 {
-				// Only one choice
-				destination[destTunnelId] = v.TunnelIndex[0]
+				cost[destTunnelId] = 0
 				continue
 			}
 
@@ -488,28 +543,35 @@ func day16(file string) (int, int) {
 			bestTunnel := -1
 			bestScore := 99999
 			for _, v2 := range v.TunnelIndex {
-				score := RouteTo(v2, destTunnelId, graph, 1<<tunnelId)
-				if score < bestScore {
+				score := 1 + RouteTo(v2, destTunnelId, graph, 1<<tunnelId)
+				if tunnelId == 3 && destTunnelId == 9 {
+					log.Println("Going", v2, destTunnelId, score)
+				}
+				if score <= bestScore {
 					bestScore = score
 					bestTunnel = v2
 				}
 			}
 			destination[destTunnelId] = bestTunnel
+			cost[destTunnelId] = bestScore
 			// fmt.Println("Finding shortest path")
 		}
 
 		graph[tunnelId].Destination = destination
+		graph[tunnelId].DestinationCost = cost
 	}
-	// fmt.Printf("Graph: %+v\n", graph)
+	fmt.Printf("Graph: %+v\n", graph)
+	for k, v := range graph {
+		fmt.Printf(" %d %s %d %d %d\n", k, v.Tunnels, v.TunnelIndex, v.Destination, v.DestinationCost)
+	}
 	// if true {
 	// 	return 1, 2
 	// }
 
-	// Time taken 13.287075ms 139369 evals taken
 	part1 = day16part1(graph, start, allpressure)
 	// part1 = 1651
 	fmt.Println("part1", part1)
-	part2 = day16part2(graph, start, allpressure)
+	// part2 = day16part2(graph, start, allpressure)
 
 	return part1, part2
 }
@@ -518,12 +580,14 @@ func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	part1, part2 := day16("test.txt")
 
+	// part1 Time taken 13.287075ms 139369 evals taken
+	// Time taken 1.089914894s 6049832 evals taken <- dest
 	fmt.Println(part1, part2)
 	if part1 != 1651 || part2 != 1707 {
-		log.Fatal("Bad test")
+		log.Fatal("Bad test expect 1651 and 1707")
 	}
 	// fmt.Println(day16("test2.txt")) // 1563 too low
 
 	// part1 Time taken 1m26.050488254s 404526530 evals taken
-	fmt.Println(day16("input.txt")) // 1563 too low
+	// fmt.Println(day16("input.txt")) // 1563 too low
 }
