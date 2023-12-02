@@ -12,8 +12,7 @@ var words = []string{
 	"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 }
 
-func day1(file string) (int, int) {
-	part1, part2 := 0, 0
+func day1(file string) (part1, part2 int) {
 	f, _ := os.Open(file)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
@@ -23,42 +22,29 @@ func day1(file string) (int, int) {
 		first, last := -1, -1
 		firstk, lastk := 999, -1
 		for k, v := range t {
-			if v >= '0' && v <= '9' {
+			v2 := int(v) - '0'
+			if v2 >= 0 && v2 <= 9 {
 				if first < 0 {
-					first = int(v) - '0'
-					firstk = k
-				} else {
-					last = int(v) - '0'
-					lastk = k
+					first, firstk = v2, k
 				}
+				last, lastk = v2, k
 			}
-		}
-		if last == -1 && first > -1 {
-			last = first
-			lastk = firstk
 		}
 		part1 += first*10 + last
 
 		for k, v := range words {
 			i := strings.Index(t, v)
 			if i >= 0 && i < firstk {
-				first = k
-				firstk = i
+				first, firstk = k, i
 			}
 			i = strings.LastIndex(t, v)
 			if i >= 0 && i > lastk {
-				last = k
-				lastk = i
+				last, lastk = k, i
 			}
 		}
 		part2 += first*10 + last
-
-		// Sanity
-		if first <= 0 || first > 9 || last <= 0 || last > 9 {
-			log.Fatal("OOB")
-		}
 	}
-	return part1, part2
+	return
 }
 
 func main() {
