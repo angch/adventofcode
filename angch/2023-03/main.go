@@ -25,15 +25,9 @@ func day3(file string) (part1, part2 int) {
 	row := 0
 	for scanner.Scan() {
 		t := scanner.Text()
-		isDigit := false
 		row++
-		startk := 0
+		startk, isDigit := 0, false
 		for k, v := range t {
-			if v == '.' {
-				v = 0
-			}
-			board[Coord{k, row}] = byte(v)
-
 			if v >= '0' && v <= '9' {
 				if !isDigit {
 					isDigit = true
@@ -41,14 +35,19 @@ func day3(file string) (part1, part2 int) {
 				}
 				strboard[Coord{startk, row}] += string(v)
 			} else {
+				isDigit = false
 				if v == '*' {
 					gears = append(gears, Coord{k, row})
 				}
-				isDigit = false
+				if v != '.' {
+					board[Coord{k, row}] = byte(v)
+				}
 			}
 		}
 	}
+
 a:
+	// Go over all known numbers:
 	for k, v := range strboard {
 		x1, x2 := k.X-1, k.X+len(v)
 		i, _ := strconv.Atoi(v)
@@ -65,14 +64,16 @@ a:
 		if board[Coord{x1, k.Y}] != 0 || board[Coord{x2, k.Y}] != 0 {
 			continue
 		}
+		// Nah, it's standalone:
 		part1 -= i
 	}
 
+	// Go over all known gears:
 	for _, gearCoord := range gears {
 		nums := []int{}
+		// Look for adjecent numbers:
 		for k, v := range strboard {
-			dy := max(gearCoord.Y-k.Y, k.Y-gearCoord.Y)
-			if dy > 1 {
+			if max(gearCoord.Y-k.Y, k.Y-gearCoord.Y) > 1 {
 				continue
 			}
 			if gearCoord.X+1 < k.X || gearCoord.X > k.X+len(v) {
