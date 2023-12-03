@@ -12,20 +12,19 @@ type Coord struct {
 	X, Y int
 }
 
-func day3(file string) (int, int) {
-	part1, part2 := 0, 0
+func day3(file string) (part1, part2 int) {
 	f, _ := os.Open(file)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
 	board := make(map[Coord]byte)
 	strboard := make(map[Coord]string)
+	intboard := make(map[Coord]int)
 	gears := []Coord{}
 
 	row := 0
 	for scanner.Scan() {
 		t := scanner.Text()
-		_ = t
 		isDigit := false
 		row++
 		startk := 0
@@ -48,55 +47,24 @@ func day3(file string) (int, int) {
 				isDigit = false
 			}
 		}
-		// log.Println(len(strboard))
 	}
 a:
 	for k, v := range strboard {
-		// log.Println(k, v)
-		x1 := k.X - 1
-		x2 := k.X + len(v)
+		x1, x2 := k.X-1, k.X+len(v)
 		i, _ := strconv.Atoi(v)
+		intboard[k] = i
 		part1 += i
 
-		debug := false
-		if v == "617" {
-			debug = true
-			log.Println("yes", x1, x2, k.Y)
-		}
 		for x := x1; x <= x2; x++ {
-			// log.Println("xx", x)
-			if board[Coord{x, k.Y - 1}] != 0 {
-				if debug {
-					log.Println(k)
-				}
+			// Scan the top and bottom neighbours, skipping when we find nonempty
+			if board[Coord{x, k.Y - 1}] != 0 || board[Coord{x, k.Y + 1}] != 0 {
 				continue a
 			}
-			if board[Coord{x, k.Y + 1}] != 0 {
-				if debug {
-					log.Println(k, string(board[Coord{x, k.Y + 1}]))
-				}
-				continue a
-			}
-			if debug {
-				// log.Println("y")
-			}
 		}
-		if board[Coord{x1, k.Y}] != 0 {
-			if debug {
-				log.Println("1", k)
-			}
-			continue a
+		// Test left and right of the current row
+		if board[Coord{x1, k.Y}] != 0 || board[Coord{x2, k.Y}] != 0 {
+			continue
 		}
-		if board[Coord{x2, k.Y}] != 0 {
-			if debug {
-				log.Println("2", k)
-			}
-			continue a
-		}
-		if debug {
-			// log.Fatal("x")
-		}
-		log.Println("skip", i)
 		part1 -= i
 	}
 
@@ -107,23 +75,16 @@ a:
 			if dy > 1 {
 				continue
 			}
-
-			if gearCoord.X+1 < k.X {
+			if gearCoord.X+1 < k.X || gearCoord.X > k.X+len(v) {
 				continue
 			}
-			if gearCoord.X > k.X+len(v) {
-				continue
-			}
-			i, _ := strconv.Atoi(v)
-			nums = append(nums, i)
+			nums = append(nums, intboard[k])
 		}
 		if len(nums) > 1 {
 			part2 += nums[0] * nums[1]
 		}
 	}
-
-	log.Println(strboard, part1)
-	return part1, part2
+	return
 }
 
 func main() {
@@ -132,6 +93,5 @@ func main() {
 	if part1 != 4361 || part2 != 467835 {
 		log.Fatal("Test failed ", part1, part2)
 	}
-	// 562097 too high
 	fmt.Println(day3("input.txt"))
 }
