@@ -21,34 +21,24 @@ func day4(file string) (part1, part2 int) {
 
 		_, r1, _ := strings.Cut(t, ":")
 		l, r, _ := strings.Cut(r1, " | ")
-		win := strings.Fields(l)
-		have := strings.Fields(r)
 
-		winMap := map[string]bool{}
-		for _, v := range win {
-			winMap[v] = true
+		win := map[string]bool{}
+		for _, v := range strings.Fields(l) {
+			win[v] = true
 		}
 		count := 0
-		for _, v := range have {
-			if winMap[v] {
+		for _, v := range strings.Fields(r) {
+			if win[v] {
 				count++
 			}
 		}
-		score := 0
-		if count > 0 {
-			score = 1 << (count - 1)
-		}
-
+		score := (1 << count) >> 1
 		for ; count > 0; count-- {
 			dup[card+count] += dup[card] + 1
 		}
 		part2 += dup[card] + 1
-		fmt.Println("dup is now", dup)
-
-		fmt.Println(card, winMap, have, score)
 		part1 += score
 	}
-
 	return
 }
 
@@ -58,6 +48,5 @@ func main() {
 	if part1 != 13 || part2 != 30 {
 		log.Fatal("Test failed ", part1, part2)
 	}
-	fmt.Println(part1, part2)
 	fmt.Println(day4("input.txt"))
 }
