@@ -32,12 +32,11 @@ func day4(file string) (part1, part2 int) {
 				count++
 			}
 		}
-		score := (1 << count) >> 1
+		part1 += (1 << count) >> 1
 		for ; count > 0; count-- {
 			dup[card+count] += dup[card] + 1
 		}
 		part2 += dup[card] + 1
-		part1 += score
 	}
 	return
 }
