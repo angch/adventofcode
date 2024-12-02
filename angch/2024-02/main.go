@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func isafe(row []int, skip int) bool {
+func isSafe(row []int, skip int) bool {
 	prev, dir := -100, 0
 	for k, v := range row {
 		if k == skip {
@@ -43,18 +43,17 @@ func day2(file string) (part1, part2 int) {
 	for scanner.Scan() {
 		t := scanner.Text()
 		row := []int{}
-		strs := strings.Split(t, " ")
-		for _, v := range strs {
+		for _, v := range strings.Fields(t) {
 			i, _ := strconv.Atoi(v)
 			row = append(row, i)
 		}
-		safe := isafe(row, -1)
+		safe := isSafe(row, -1)
 		if safe {
 			part1++
 			part2++
 		} else {
 			for k := range len(row) {
-				safe := isafe(row, k)
+				safe := isSafe(row, k)
 				if safe {
 					part2++
 					break
@@ -62,7 +61,6 @@ func day2(file string) (part1, part2 int) {
 			}
 		}
 	}
-	// log.Println(rows)
 	return
 }
 
