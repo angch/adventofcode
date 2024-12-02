@@ -9,30 +9,30 @@ import (
 	"strings"
 )
 
-func isafe(row []int) bool {
-	prev := -100
-	safe := true
-	dir := -10
-	for _, v := range row {
+func isafe(row []int, skip int) bool {
+	prev, dir := -100, 0
+	for k, v := range row {
+		if k == skip {
+			continue
+		}
 		if prev == -100 {
 			prev = v
 			continue
 		}
-		if dir == -10 {
+		if dir == 0 {
 			if prev > v {
-				dir = 1
+				dir--
 			} else {
-				dir = -1
+				dir++
 			}
 		}
-		d := (v - prev) * -dir
+		d := (v - prev) * dir
 		if d > 3 || d <= 0 {
-			safe = false
+			return false
 		}
 		prev = v
 	}
-	return safe
-
+	return true
 }
 
 func day2(file string) (part1, part2 int) {
@@ -40,7 +40,6 @@ func day2(file string) (part1, part2 int) {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
-	rows := [][]int{}
 	for scanner.Scan() {
 		t := scanner.Text()
 		row := []int{}
@@ -49,28 +48,19 @@ func day2(file string) (part1, part2 int) {
 			i, _ := strconv.Atoi(v)
 			row = append(row, i)
 		}
-		safe := isafe(row)
+		safe := isafe(row, -1)
 		if safe {
-			log.Println("safe")
 			part1++
 			part2++
 		} else {
-			for k := 0; k < len(row); k++ {
-				row1 := make([]int, len(row))
-				copy(row1, row)
-				// remove k
-				row1 = append(row1[:k], row1[k+1:]...)
-				safe := isafe(row1)
+			for k := range len(row) {
+				safe := isafe(row, k)
 				if safe {
-					log.Println("part2 safe")
 					part2++
 					break
 				}
 			}
-			log.Println("part2 unsafe")
 		}
-
-		rows = append(rows, row)
 	}
 	// log.Println(rows)
 	return
@@ -79,7 +69,7 @@ func day2(file string) (part1, part2 int) {
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	part1, part2 := day2("test.txt")
-	log.Println(part1)
+	fmt.Println(part1, part2)
 	if part1 != 2 || part2 != 4 {
 		log.Fatal("Test failed ", part1, part2)
 	}
