@@ -13,21 +13,20 @@ func day3(file string) (part1, part2 int) {
 	defer f.Close()
 
 	t, _ := io.ReadAll(f)
-	t2 := string(t)
 	reg := regexp.MustCompile(`(mul\((\d+),(\d+)\))|(do\(\))|(don't\(\))`)
-	out := reg.FindAllStringSubmatch(t2, -1)
+	out := reg.FindAllSubmatch(t, -1)
 	on := 1
 	for _, v := range out {
 		if len(v) >= 4 {
-			switch v[0] {
+			switch string(v[0]) {
 			case "don't()":
 				on = 0
 			case "do()":
 				on = 1
 			default:
-				a, b := 0, 0
-				fmt.Sscanf(v[2], "%d", &a)
-				fmt.Sscanf(v[3], "%d", &b)
+				var a, b int
+				_, _ = fmt.Sscanf(string(v[2]), "%d", &a)
+				_, _ = fmt.Sscanf(string(v[3]), "%d", &b)
 				part1 += a * b
 				part2 += a * b * on
 			}
