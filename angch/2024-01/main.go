@@ -20,7 +20,10 @@ func day1(file string) (part1, part2 int) {
 	for scanner.Scan() {
 		t := scanner.Text()
 		n1, n2 := 0, 0
-		fmt.Sscanf(t, "%d %d", &n1, &n2)
+		_, err := fmt.Sscanf(t, "%d %d", &n1, &n2)
+		if err != nil {
+			log.Fatalf("Error reading input: %v", err)
+		}
 		one = append(one, n1)
 		two = append(two, n2)
 		count[n2]++
@@ -41,7 +44,6 @@ func day1(file string) (part1, part2 int) {
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	part1, part2 := day1("test.txt")
-	log.Println(part1)
 	if part1 != 11 || part2 != 31 {
 		log.Fatal("Test failed ", part1, part2)
 	}
