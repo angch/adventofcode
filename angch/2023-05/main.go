@@ -21,8 +21,8 @@ type MapRecord struct {
 	Records Records
 }
 
-func (r *Records) Translate(i int) int {
-	for _, v := range *r {
+func (m *MapRecord) Translate(i int) int {
+	for _, v := range m.Records {
 		// log.Println("Check", v.Src, v.Src+v.Range, i)
 		if i >= v.Src && i < v.Src+v.Range {
 			return v.Dst + i - v.Src
@@ -31,11 +31,11 @@ func (r *Records) Translate(i int) int {
 	return i
 }
 
-func findLocation(maps map[string]MapRecord, v int) int{
+func findLocation(maps map[string]MapRecord, v int) int {
 	curType := "seed"
 	for curType != "location" {
 		// fmt.Printf("%s %d, ", curType, v)
-		r := maps[curType].Records
+		r := maps[curType]
 		v = r.Translate(v)
 		curType = maps[curType].To
 	}
@@ -92,7 +92,7 @@ func day5(file string) (part1, part2 int) {
 
 	lowest := -1
 	for _, v := range seeds {
-		v  =findLocation(maps, v)
+		v = findLocation(maps, v)
 		if lowest == -1 || v < lowest {
 			lowest = v
 		}
@@ -101,7 +101,7 @@ func day5(file string) (part1, part2 int) {
 	part1 = lowest
 
 	lowest = -1
-	for i := 0; i < len(seeds); i+=2 {
+	for i := 0; i < len(seeds); i += 2 {
 		start := seeds[i]
 		rng := seeds[i+1]
 		for j := start; j < start+rng; j++ {
