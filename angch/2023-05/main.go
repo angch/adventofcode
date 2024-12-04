@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Range struct {
@@ -77,7 +78,7 @@ func day5(file string) (part1, part2 int) {
 					break
 				}
 				rng := Range{}
-				fmt.Sscanf(t, "%d %d %d", &rng.Dst, &rng.Src, &rng.Range)
+				_, _ = fmt.Sscanf(t, "%d %d %d", &rng.Dst, &rng.Src, &rng.Range)
 				r = append(r, rng)
 			}
 			// log.Printf("%+v\n", r)
@@ -118,9 +119,11 @@ func day5(file string) (part1, part2 int) {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	t1 := time.Now()
 	part1, part2 := day5("test.txt")
 	if part1 != 35 || part2 != 46 {
 		log.Fatal("Test failed ", part1, part2)
 	}
 	fmt.Println(day5("input.txt"))
+	fmt.Println("Elapsed", time.Since(t1))
 }
