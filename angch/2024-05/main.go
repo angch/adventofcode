@@ -19,34 +19,26 @@ func day5(file string) (part1, part2 int) {
 
 	scanner := bufio.NewScanner(f)
 	rules := make(map[int][]int)
-	printbefore := make(map[int][]int)
 	for scanner.Scan() {
 		t := scanner.Text()
 		if t == "" {
 			break
 		}
 		p1, p2 := 0, 0
-		fmt.Sscanf(t, "%d|%d", &p1, &p2)
+		_, _ = fmt.Sscanf(t, "%d|%d", &p1, &p2)
 
 		_, ok := rules[p1]
 		if !ok {
-			rules[p1] = make([]int, 0)
+			rules[p1] = make([]int, 0, 2)
 		}
 		rules[p1] = append(rules[p1], p2)
-
-		_, ok = printbefore[p2]
-		if !ok {
-			printbefore[p2] = make([]int, 0)
-		}
-		printbefore[p2] = append(printbefore[p2], p1)
 	}
-	// log.Println(rules)
 
 	updates := [][]int{}
 	for scanner.Scan() {
 		t := scanner.Text()
 		f := strings.Split(t, ",")
-		u := []int{}
+		u := make([]int, 0, 4)
 		for _, v := range f {
 			i, err := strconv.Atoi(v)
 			if err == nil {
@@ -55,56 +47,37 @@ func day5(file string) (part1, part2 int) {
 		}
 		updates = append(updates, u)
 	}
-	// log.Println(updates)
 
 	for _, update := range updates {
-		ispart2 := false
+		tries := 0
 	a:
-		printed := make(map[int]int)
-		good := true
+		for {
+			printed := make(map[int]int)
+			page := 0
 
-		toprint := make(map[int]bool)
-		for _, v := range update {
-			toprint[v] = true
-		}
-		swap1, swap2 := 0, 0
-		page := 0
-	b:
-		for k1, v := range update {
-			if rules[v] != nil {
-				for _, p := range rules[v] {
-					if !toprint[p] {
-						continue
-					}
-					if printed[p] > 0 {
-						swap1 = printed[p]
-						swap2 = k1
-						good = false
-						break b
+			for k1, v := range update {
+				if rules[v] != nil {
+					for _, p := range rules[v] {
+						if printed[p] > 0 {
+							swap1 := printed[p] - 1
+							update[swap1], update[k1] = update[k1], update[swap1]
+							tries++
+							continue a
+						}
 					}
 				}
+				page++
+				printed[v] = page
 			}
-			page++
-			printed[v] = page
+			break
 		}
-		if good {
-			mid := len(update) / 2
-			if !ispart2 {
-				part1 += update[mid]
-			} else {
-				part2 += update[mid]
-			}
+		mid := len(update) / 2
+		if tries == 0 {
+			part1 += update[mid]
 		} else {
-			// part2 reorder
-			swap1--
-			// log.Println(swap1, swap2)
-			update[swap1], update[swap2] = update[swap2], update[swap1]
-			// log.Println(update)
-			ispart2 = true
-			goto a // Meh
+			part2 += update[mid]
 		}
 	}
-
 	return
 }
 
