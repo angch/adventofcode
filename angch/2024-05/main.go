@@ -26,11 +26,6 @@ func day5(file string) (part1, part2 int) {
 		}
 		p1, p2 := 0, 0
 		_, _ = fmt.Sscanf(t, "%d|%d", &p1, &p2)
-
-		_, ok := rules[p1]
-		if !ok {
-			rules[p1] = make([]int, 0, 2)
-		}
 		rules[p1] = append(rules[p1], p2)
 	}
 
@@ -40,10 +35,8 @@ func day5(file string) (part1, part2 int) {
 		f := strings.Split(t, ",")
 		u := make([]int, 0, 4)
 		for _, v := range f {
-			i, err := strconv.Atoi(v)
-			if err == nil {
-				u = append(u, i)
-			}
+			i, _ := strconv.Atoi(v)
+			u = append(u, i)
 		}
 		updates = append(updates, u)
 	}
@@ -51,19 +44,16 @@ func day5(file string) (part1, part2 int) {
 	for _, update := range updates {
 		tries := 0
 	a:
-		for {
+		for ; ; tries++ {
 			printed := make(map[int]int)
 			page := 0
 
 			for k1, v := range update {
-				if rules[v] != nil {
-					for _, p := range rules[v] {
-						if printed[p] > 0 {
-							swap1 := printed[p] - 1
-							update[swap1], update[k1] = update[k1], update[swap1]
-							tries++
-							continue a
-						}
+				for _, p := range rules[v] {
+					if printed[p] > 0 {
+						swap1 := printed[p] - 1
+						update[swap1], update[k1] = update[k1], update[swap1]
+						continue a
 					}
 				}
 				page++
@@ -71,11 +61,11 @@ func day5(file string) (part1, part2 int) {
 			}
 			break
 		}
-		mid := len(update) / 2
+		mid := update[len(update)/2]
 		if tries == 0 {
-			part1 += update[mid]
+			part1 += mid
 		} else {
-			part2 += update[mid]
+			part2 += mid
 		}
 	}
 	return
