@@ -8,15 +8,6 @@ import (
 	"time"
 )
 
-func countexit(mm map[[2]int]byte) (count int) {
-	for _, v := range mm {
-		if v == '#' {
-			count++
-		}
-	}
-	return
-}
-
 func day6(file string) (part1, part2 int) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -56,9 +47,7 @@ func day6(file string) (part1, part2 int) {
 			visited[guard] = true
 		} else if mm[guard2] == '#' {
 			// turn right
-			dir = [2]int{dir[1], -dir[0]}
-			dir = [2]int{dir[1], -dir[0]}
-			dir = [2]int{dir[1], -dir[0]}
+			dir = [2]int{-dir[1], dir[0]}
 		} else {
 			break
 		}
@@ -69,36 +58,30 @@ a:
 	for v := range visited {
 		guard = orig
 		dir = origd
+		dirIndex := 0
 
-		visited2 := make(map[[2]int]bool)
-		looping := 0
+		visited2 := make(map[[2]int]int)
+		visited2[guard] = 1 << dirIndex
 
 		for {
 			guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
 			if guard2 != v && mm[guard2] == '.' || mm[guard2] == '^' {
 				guard = guard2
 
-				if visited2[guard] {
-					looping++
-					if looping > 400 {
-						part2++
-						continue a
-					}
-				} else {
-					looping = 0
+				if (visited2[guard] & (1 << dirIndex)) != 0 {
+					part2++
+					continue a
 				}
-				visited2[guard] = true
+				visited2[guard] |= 1 << dirIndex
 			} else if mm[guard2] == '#' || guard2 == v {
 				// turn right
-				dir = [2]int{dir[1], -dir[0]}
-				dir = [2]int{dir[1], -dir[0]}
-				dir = [2]int{dir[1], -dir[0]}
+				dir = [2]int{-dir[1], dir[0]}
+				dirIndex = (dirIndex + 1) % 4
 			} else {
 				break
 			}
 		}
 	}
-
 	return
 }
 
