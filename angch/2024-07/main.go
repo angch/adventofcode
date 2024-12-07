@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -87,12 +88,40 @@ func day7(file string) (part1, part2 int) {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
+	work := make(chan string, 8)
+	result := make(chan [2]int, 8)
+	wg := sync.WaitGroup{}
+	workerNum := 16
+	wg.Add(workerNum)
+	for i := 0; i < workerNum; i++ {
+		go func(work chan string, result chan [2]int) {
+			for t := range work {
+				p1, p2 := Work(t)
+				result <- [2]int{p1, p2}
+			}
+			wg.Done()
+		}(work, result)
+	}
+
+	wg2 := sync.WaitGroup{}
+	wg2.Add(1)
+	go func() {
+		for r := range result {
+			part1 += r[0]
+			part2 += r[1]
+		}
+		wg2.Done()
+	}()
+
 	for scanner.Scan() {
 		t := scanner.Text()
-		p1, p2 := Work(t)
-		part1 += p1
-		part2 += p2
+		work <- t
 	}
+
+	close(work)
+	wg.Wait()
+	close(result)
+	wg2.Wait()
 	part2 += part1
 	return
 }
