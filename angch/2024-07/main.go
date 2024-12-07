@@ -29,50 +29,62 @@ func day7(file string) (part1, part2 int) {
 			n = append(n, nums)
 		}
 		ops := make([]int, len(n)-1)
+		prevvalues := make([]int, len(n))
+		prevvalues[0] = n[0]
+		last := 1
 	a:
 		for {
-			start := n[0]
-			ispart2 := false
+			start := prevvalues[last-1]
 			bad := len(ops) - 1
-			for i := 1; i < len(n); i++ {
+			for i := last; i < len(n); i++ {
 				if ops[i-1] == 0 {
 					start += n[i]
 				} else if ops[i-1] == 1 {
 					start *= n[i]
 				} else {
-					ispart2 = true
+					// ispart2 = true
 					for range len(rs[i]) {
 						start *= 10
 					}
 					start += n[i]
 				}
+				prevvalues[i] = start
 				if start > testv {
-					// Early exit
+					// Early exit, so we know all operators
+					// after this is "bad", jump to the next
+					// op.
 					bad = i - 1
 					break
 				}
 			}
 			if start == testv {
-				if ispart2 {
-					part2 += testv
-				} else {
-					part1 += testv
+				// Need to recheck, since we cached old values, unsure
+				// if we're using part2 ops or not
+				for _, v := range ops {
+					if v == 2 {
+						part2 += testv
+						break a
+					}
 				}
+				part1 += testv
 				break a
 			}
 
+			// Iterate to the next ops, starting with the
+			// one we know it's bad, no need to test everything
 			for i := bad; i >= 0; i-- {
 				ops[i]++
 				if ops[i] == 3 {
 					ops[i] = 0
 				} else {
+					// Remember where we're continuing, don't
+					// need to recalc everything
+					last = i + 1
 					continue a
 				}
 			}
 			break
 		}
-
-		// log.Println(testv, n)
 	}
 	part2 += part1
 	return
