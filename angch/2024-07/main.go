@@ -23,10 +23,16 @@ func day7(file string) (part1, part2 int) {
 		l, r, _ := strings.Cut(t, ": ")
 		testv, _ := strconv.Atoi(l)
 		rs := strings.Split(r, " ")
-		n := make([]int, 0, len(rs))
-		for _, v := range rs {
-			nums, _ := strconv.Atoi(v)
-			n = append(n, nums)
+		n := make([]int, len(rs))
+		mult10 := make([]int, len(rs)) // Faster if we precalc 10^x
+		for i, v := range rs {
+			num, _ := strconv.Atoi(v)
+			n[i] = num
+			m := 1
+			for range len(v) {
+				m *= 10
+			}
+			mult10[i] = m
 		}
 		ops := make([]int, len(n)-1)
 		prevvalues := make([]int, len(n))
@@ -42,11 +48,7 @@ func day7(file string) (part1, part2 int) {
 				} else if ops[i-1] == 1 {
 					start *= n[i]
 				} else {
-					// ispart2 = true
-					for range len(rs[i]) {
-						start *= 10
-					}
-					start += n[i]
+					start = start*mult10[i] + n[i]
 				}
 				prevvalues[i] = start
 				if start > testv {
