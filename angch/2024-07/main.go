@@ -33,6 +33,7 @@ func day7(file string) (part1, part2 int) {
 		for {
 			start := n[0]
 			ispart2 := false
+			bad := len(ops) - 1
 			for i := 1; i < len(n); i++ {
 				if ops[i-1] == 0 {
 					start += n[i]
@@ -45,32 +46,30 @@ func day7(file string) (part1, part2 int) {
 					}
 					start += n[i]
 				}
+				if start > testv {
+					// Early exit
+					bad = i - 1
+					break
+				}
 			}
 			if start == testv {
-				// log.Println(ops, start, testv, part1)
-
 				if ispart2 {
 					part2 += testv
 				} else {
 					part1 += testv
 				}
-
 				break a
 			}
 
-			again := false
-			for i := 0; i < len(ops); i++ {
+			for i := bad; i >= 0; i-- {
 				ops[i]++
 				if ops[i] == 3 {
 					ops[i] = 0
 				} else {
-					again = true
-					break
+					continue a
 				}
 			}
-			if !again {
-				break
-			}
+			break
 		}
 
 		// log.Println(testv, n)
