@@ -40,9 +40,10 @@ func day7(file string) (part1, part2 int) {
 					start *= n[i]
 				} else {
 					ispart2 = true
-					vv := fmt.Sprintf("%d%d", start, n[i])
-					v, _ := strconv.Atoi(vv)
-					start = v
+					for range len(rs[i]) {
+						start *= 10
+					}
+					start += n[i]
 				}
 			}
 			if start == testv {
