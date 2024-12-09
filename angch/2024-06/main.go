@@ -23,27 +23,24 @@ func day6(file string) (part1, part2 int) {
 
 	maxX, maxY := 0, 0
 	guard := [2]int{0, 0}
-
 	y := 0
-	xc := 0
-	yc := 0
 	for i, c := range board {
 		if board[i] == '\n' {
 			if maxX == 0 {
-				maxX = i
+				maxX = i + 1
 			}
 			y++
-			xc = 0
-			yc++
 		}
 		if c == '^' {
-			x := i % (maxX + 1)
-			y = i / (maxX + 1)
+			x := i % maxX
+			y = i / maxX
 			guard = [2]int{x, y}
 			board[i] = '.'
+			break
 		}
-		xc++
 	}
+	maxX2 := maxX
+	maxX--
 	maxY = len(board) / (maxX)
 	dir := [2]int{0, -1}
 
@@ -52,7 +49,6 @@ func day6(file string) (part1, part2 int) {
 
 	visited := make(map[[2]int]bool)
 	visited[guard] = true
-	maxX2 := maxX + 1
 
 	for {
 		guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
