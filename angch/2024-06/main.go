@@ -1,10 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"runtime/pprof"
 	"time"
 )
 
@@ -15,26 +16,35 @@ func day6(file string) (part1, part2 int) {
 	}
 	defer f.Close()
 
-	mm := make(map[[2]int]bool)
+	board, err := io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	maxX, maxY := 0, 0
 	guard := [2]int{0, 0}
 
-	scanner := bufio.NewScanner(f)
 	y := 0
-	maxX := 0
-	for scanner.Scan() {
-		t := scanner.Text()
-		for x, v := range t {
-			if v == '#' {
-				mm[[2]int{x, y}] = true
+	xc := 0
+	yc := 0
+	for i, c := range board {
+		if board[i] == '\n' {
+			if maxX == 0 {
+				maxX = i
 			}
-			if v == '^' {
-				guard = [2]int{x, y}
-			}
+			y++
+			xc = 0
+			yc++
 		}
-		maxX = len(t)
-		y++
+		if c == '^' {
+			x := i % (maxX + 1)
+			y = i / (maxX + 1)
+			guard = [2]int{x, y}
+			board[i] = '.'
+		}
+		xc++
 	}
-	// log.Println(mm)
+	maxY = len(board) / (maxX)
 	dir := [2]int{0, -1}
 
 	orig := guard
@@ -42,40 +52,50 @@ func day6(file string) (part1, part2 int) {
 
 	visited := make(map[[2]int]bool)
 	visited[guard] = true
+	maxX2 := maxX + 1
+
 	for {
 		guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
-		if !mm[guard2] && guard2[0] >= 0 && guard2[0] < maxX && guard2[1] >= 0 && guard2[1] < y {
+		offset := guard2[0] + guard2[1]*maxX2
+		if guard2[0] < 0 || guard2[0] >= maxX || guard2[1] < 0 || guard2[1] >= maxY {
+			// escaped
+			break
+		}
+		if board[offset] != '#' {
 			guard = guard2
+			// fmt.Println(guard)
 			visited[guard] = true
-		} else if mm[guard2] {
+		} else if board[offset] == '#' {
 			// turn right
 			dir = [2]int{-dir[1], dir[0]}
-		} else {
-			break
 		}
 	}
 	part1 = len(visited)
-
 a:
 	for v := range visited {
 		guard = orig
 		dir = origd
 		dirIndex := 0
 
-		visited2 := make(map[[2]int]int)
-		visited2[guard] = 1 << dirIndex
+		visited2 := make([]byte, len(board))
+		guardoff := guard[0] + guard[1]*maxX2
+		visited2[guardoff] = byte(1 << dirIndex)
 
 		for {
 			guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
-			if guard2 != v && !mm[guard2] && guard2[0] >= 0 && guard2[0] < maxX && guard2[1] >= 0 && guard2[1] < y {
+			offset := guard2[0] + guard2[1]*maxX2
+			if guard2[0] < 0 || guard2[0] >= maxX || guard2[1] < 0 || guard2[1] >= maxY {
+				// escaped
+				break
+			}
+			if board[offset] != '#' && guard2 != v {
 				guard = guard2
-
-				if (visited2[guard] & (1 << dirIndex)) != 0 {
+				if (visited2[offset] & (1 << dirIndex)) != 0 {
 					part2++
 					continue a
 				}
-				visited2[guard] |= 1 << dirIndex
-			} else if mm[guard2] || guard2 == v {
+				visited2[offset] |= 1 << dirIndex
+			} else if board[offset] == '#' || guard2 == v {
 				// turn right
 				dir = [2]int{-dir[1], dir[0]}
 				dirIndex = (dirIndex + 1) % 4
@@ -89,6 +109,12 @@ a:
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	logperf := false
+	if logperf {
+		pf, _ := os.Create("cpu.pprof")
+		pprof.StartCPUProfile(pf)
+		defer pf.Close()
+	}
 	t1 := time.Now()
 	part1, part2 := day6("test.txt")
 	fmt.Println(part1, part2)
@@ -96,5 +122,8 @@ func main() {
 		log.Fatal("Test failed ", part1, part2)
 	}
 	fmt.Println(day6("input.txt"))
+	if logperf {
+		pprof.StopCPUProfile()
+	}
 	fmt.Println("Elapsed time:", time.Since(t1))
 }
