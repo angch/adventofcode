@@ -16,31 +16,29 @@ func day10(file string) (part1, part2 int) {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
-	mm := map[[2]int]int{}
-	mm2 := map[int]map[[2]int]bool{}
+	mm := map[int]map[[2]int]bool{}
 
 	y := 0
 	for scanner.Scan() {
 		t := scanner.Text()
 
 		for x, k := range t {
-			c := int(k - '0')
-			mm[[2]int{x, y}] = c
-			_, ok := mm2[c]
+			h := int(k - '0')
+			_, ok := mm[h]
 			if !ok {
-				mm2[c] = make(map[[2]int]bool)
+				mm[h] = make(map[[2]int]bool)
 			}
-			mm2[c][[2]int{x, y}] = true
+			mm[h][[2]int{x, y}] = true
 		}
 		y++
 	}
 
-	for v, _ := range mm2[0] {
+	for v := range mm[0] {
 		paths := map[[2]int]int{v: 1}
 		for h := 1; h <= 9; h++ {
 			npaths := map[[2]int]int{}
-			for v, _ := range paths {
-				for p, _ := range mm2[h] {
+			for v := range paths {
+				for p := range mm[h] {
 					dx := max(p[0], v[0]) - min(p[0], v[0])
 					dy := max(p[1], v[1]) - min(p[1], v[1])
 					if dx+dy == 1 {
@@ -55,7 +53,6 @@ func day10(file string) (part1, part2 int) {
 			part2 += v
 		}
 	}
-
 	return
 }
 
