@@ -82,10 +82,10 @@ func day6(file string) (part1, part2 int64) {
 	visited := make(map[[2]int]bool)
 	visited[guard] = true
 
-	workers := 16
+	workers := 32
 	wg := sync.WaitGroup{}
 	wg.Add(workers)
-	work := make(chan [2]int, workers*32)
+	work := make(chan [2]int, workers*16)
 	// atomic.StoreInt32(&part2, 0)
 	for i := 0; i < workers; i++ {
 		go func() {
@@ -98,11 +98,11 @@ func day6(file string) (part1, part2 int64) {
 
 	for {
 		guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
-		offset := guard2[0] + guard2[1]*maxX2
 		if guard2[0] < 0 || guard2[0] >= maxX || guard2[1] < 0 || guard2[1] >= maxY {
 			// escaped
 			break
 		}
+		offset := guard2[0] + guard2[1]*maxX2
 		if board[offset] != '#' {
 			guard = guard2
 			visited[guard] = true
@@ -114,9 +114,6 @@ func day6(file string) (part1, part2 int64) {
 	}
 	part1 = int64(len(visited))
 
-	// for v := range visited {
-	// 	work <- v
-	// }
 	close(work)
 	wg.Wait()
 	part2--
