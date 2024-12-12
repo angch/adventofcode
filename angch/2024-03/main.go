@@ -6,10 +6,14 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"time"
 )
 
 func day3(file string) (part1, part2 int) {
-	f, _ := os.Open(file)
+	f, err := os.Open(file)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer f.Close()
 
 	t, _ := io.ReadAll(f)
@@ -37,6 +41,7 @@ func day3(file string) (part1, part2 int) {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	t1 := time.Now()
 	part1, _ := day3("test.txt")
 	_, part2 := day3("test2.txt")
 	fmt.Println(part1, part2)
@@ -44,4 +49,5 @@ func main() {
 		log.Fatal("Test failed ", part1, part2)
 	}
 	fmt.Println(day3("input.txt"))
+	fmt.Println("Elapsed time:", time.Since(t1))
 }
