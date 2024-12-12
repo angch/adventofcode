@@ -6,10 +6,14 @@ import (
 	"log"
 	"os"
 	"sort"
+	"time"
 )
 
 func day1(file string) (part1, part2 int) {
-	f, _ := os.Open(file)
+	f, err := os.Open(file)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
@@ -43,9 +47,11 @@ func day1(file string) (part1, part2 int) {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	t1 := time.Now()
 	part1, part2 := day1("test.txt")
 	if part1 != 11 || part2 != 31 {
 		log.Fatal("Test failed ", part1, part2)
 	}
 	fmt.Println(day1("input.txt"))
+	fmt.Println("Elapsed time:", time.Since(t1))
 }

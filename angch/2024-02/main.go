@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func isSafe(row []int, skip int) bool {
@@ -36,7 +37,10 @@ func isSafe(row []int, skip int) bool {
 }
 
 func day2(file string) (part1, part2 int) {
-	f, _ := os.Open(file)
+	f, err := os.Open(file)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
@@ -66,10 +70,12 @@ func day2(file string) (part1, part2 int) {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	t1 := time.Now()
 	part1, part2 := day2("test.txt")
 	fmt.Println(part1, part2)
 	if part1 != 2 || part2 != 4 {
 		log.Fatal("Test failed ", part1, part2)
 	}
 	fmt.Println(day2("input.txt"))
+	fmt.Println("Elapsed time:", time.Since(t1))
 }
