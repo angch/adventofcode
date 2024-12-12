@@ -6,10 +6,42 @@ import (
 	"log"
 	"os"
 	"runtime/pprof"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
-func day6(file string) (part1, part2 int) {
+func sim(board []byte, maxX2 int, maxX int, maxY int, guard [2]int, obstruct [2]int) int64 {
+	dir := [2]int{0, -1}
+	dirIndex := 0
+
+	visited2 := make([]byte, len(board))
+	guardoff := guard[0] + guard[1]*maxX2
+	visited2[guardoff] = byte(1 << dirIndex)
+
+	for {
+		guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
+
+		if guard2[0] < 0 || guard2[0] >= maxX || guard2[1] < 0 || guard2[1] >= maxY {
+			// escaped
+			return 0
+		}
+		offset := guard2[0] + guard2[1]*maxX2
+		if board[offset] != '#' && guard2 != obstruct {
+			guard = guard2
+			if (visited2[offset] & (1 << dirIndex)) != 0 {
+				return 1
+			}
+			visited2[offset] |= 1 << dirIndex
+		} else if board[offset] == '#' || guard2 == obstruct {
+			// turn right
+			dir = [2]int{-dir[1], dir[0]}
+			dirIndex = (dirIndex + 1) % 4
+		}
+	}
+}
+
+func day6(file string) (part1, part2 int64) {
 	f, err := os.Open(file)
 	if err != nil {
 		log.Fatal(err)
@@ -44,11 +76,25 @@ func day6(file string) (part1, part2 int) {
 	maxY = len(board) / (maxX)
 	dir := [2]int{0, -1}
 
-	orig := guard
-	origd := dir
+	origguard := guard
+	// origd := dir
 
 	visited := make(map[[2]int]bool)
 	visited[guard] = true
+
+	workers := 16
+	wg := sync.WaitGroup{}
+	wg.Add(workers)
+	work := make(chan [2]int, workers*32)
+	// atomic.StoreInt32(&part2, 0)
+	for i := 0; i < workers; i++ {
+		go func() {
+			for v := range work {
+				atomic.AddInt64(&part2, sim(board, maxX2, maxX, maxY, origguard, v))
+			}
+			wg.Done()
+		}()
+	}
 
 	for {
 		guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
@@ -59,47 +105,22 @@ func day6(file string) (part1, part2 int) {
 		}
 		if board[offset] != '#' {
 			guard = guard2
-			// fmt.Println(guard)
 			visited[guard] = true
+			work <- guard
 		} else if board[offset] == '#' {
 			// turn right
 			dir = [2]int{-dir[1], dir[0]}
 		}
 	}
-	part1 = len(visited)
-a:
-	for v := range visited {
-		guard = orig
-		dir = origd
-		dirIndex := 0
+	part1 = int64(len(visited))
 
-		visited2 := make([]byte, len(board))
-		guardoff := guard[0] + guard[1]*maxX2
-		visited2[guardoff] = byte(1 << dirIndex)
+	// for v := range visited {
+	// 	work <- v
+	// }
+	close(work)
+	wg.Wait()
+	part2--
 
-		for {
-			guard2 := [2]int{guard[0] + dir[0], guard[1] + dir[1]}
-			offset := guard2[0] + guard2[1]*maxX2
-			if guard2[0] < 0 || guard2[0] >= maxX || guard2[1] < 0 || guard2[1] >= maxY {
-				// escaped
-				break
-			}
-			if board[offset] != '#' && guard2 != v {
-				guard = guard2
-				if (visited2[offset] & (1 << dirIndex)) != 0 {
-					part2++
-					continue a
-				}
-				visited2[offset] |= 1 << dirIndex
-			} else if board[offset] == '#' || guard2 == v {
-				// turn right
-				dir = [2]int{-dir[1], dir[0]}
-				dirIndex = (dirIndex + 1) % 4
-			} else {
-				break
-			}
-		}
-	}
 	return
 }
 
@@ -107,8 +128,11 @@ func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	logperf := false
 	if logperf {
-		pf, _ := os.Create("cpu.pprof")
-		pprof.StartCPUProfile(pf)
+		pf, _ := os.Create("default.pgo")
+		err := pprof.StartCPUProfile(pf)
+		if err != nil {
+			log.Fatal(err)
+		}
 		defer pf.Close()
 	}
 	t1 := time.Now()
