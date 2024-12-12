@@ -8,14 +8,6 @@ import (
 	"time"
 )
 
-type region struct {
-	Coords    map[[2]int]byte
-	Perimeter int
-	Area      int
-	Side      int
-	Plant     byte
-}
-
 func day12(file string) (part1, part2 int) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -25,7 +17,6 @@ func day12(file string) (part1, part2 int) {
 	scanner := bufio.NewScanner(f)
 
 	mm := map[[2]int]byte{}
-
 	y := 0
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -37,7 +28,8 @@ func day12(file string) (part1, part2 int) {
 
 	dirs := [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
 	for k, plant := range mm {
-		r := region{Coords: map[[2]int]byte{k: plant}}
+		coords := map[[2]int]byte{k: 1}
+
 		checks := [][2]int{k}
 		delete(mm, k)
 		for len(checks) > 0 {
@@ -47,22 +39,21 @@ func day12(file string) (part1, part2 int) {
 			for _, v2 := range dirs {
 				dc := [2]int{c[0] + v2[0], c[1] + v2[1]}
 				if mm[dc] == plant {
-					r.Coords[dc] = plant
+					coords[dc] = 1
 					delete(mm, dc)
 					checks = append(checks, dc)
 				}
 			}
 		}
-		r.Area = len(r.Coords)
+		area, perimeter, side := len(coords), 0, 0
 
 		// Perimeter
 		miny, maxy := 10000, -1
 		minx, maxx := 10000, -1
-		for c := range r.Coords {
+		for c := range coords {
 			for _, v2 := range dirs {
-				dc := [2]int{c[0] + v2[0], c[1] + v2[1]}
-				if r.Coords[dc] == 0 {
-					r.Perimeter++
+				if coords[[2]int{c[0] + v2[0], c[1] + v2[1]}] == 0 {
+					perimeter++
 				}
 			}
 			miny, maxy = min(miny, c[1]), max(maxy, c[1])
@@ -79,25 +70,18 @@ func day12(file string) (part1, part2 int) {
 			changes := map[int]int{}
 			// Mark rising and falling edges
 			for x1 := minx; x1 <= maxx; x1++ {
-				if prev == 0 {
-					if r.Coords[[2]int{x1, y1}] == plant {
-						prev = plant
-						changes[x1] = 1
-					}
-				} else {
-					if r.Coords[[2]int{x1, y1}] != plant {
-						prev = 0
-						changes[x1] = -1
-					}
+				if coords[[2]int{x1, y1}] != prev {
+					prev = 1 - prev
+					changes[x1] = int(prev) + 1
 				}
 			}
 			if prev > 0 {
-				changes[maxx+1] = -1
+				changes[maxx+1] = 1
 			}
 			// Every different change from row to row denotes a side
 			for v, change := range changes {
 				if prevchanges[v] != change {
-					r.Side++
+					side++
 				}
 			}
 			prevchanges = changes
@@ -110,31 +94,24 @@ func day12(file string) (part1, part2 int) {
 			changes := map[int]int{}
 			// Mark rising and falling edges
 			for y1 := miny; y1 <= maxy; y1++ {
-				if prev == 0 {
-					if r.Coords[[2]int{x1, y1}] == plant {
-						prev = plant
-						changes[y1] = 1
-					}
-				} else {
-					if r.Coords[[2]int{x1, y1}] != plant {
-						prev = 0
-						changes[y1] = -1
-					}
+				if coords[[2]int{x1, y1}] != prev {
+					prev = 1 - prev
+					changes[y1] = int(prev) + 1
 				}
 			}
 			if prev > 0 {
-				changes[maxy+1] = -1
+				changes[maxy+1] = 1
 			}
 			// Every different change from row to row denotes a side
 			for v, change := range changes {
 				if prevchanges[v] != change {
-					r.Side++
+					side++
 				}
 			}
 			prevchanges = changes
 		}
-		part1 += r.Area * r.Perimeter
-		part2 += r.Area * r.Side
+		part1 += area * perimeter
+		part2 += area * side
 	}
 
 	return

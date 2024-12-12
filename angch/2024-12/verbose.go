@@ -7,6 +7,14 @@ import (
 	"os"
 )
 
+type region struct {
+	Coords    map[[2]int]byte
+	Perimeter int
+	Area      int
+	Side      int
+	Plant     byte
+}
+
 func day12verbose(file string) (part1, part2 int) {
 	f, err := os.Open(file)
 	if err != nil {
