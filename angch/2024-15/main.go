@@ -61,9 +61,9 @@ func dumpboard(b Board) (int, int) {
 	return gps, 0
 }
 
-func dumpboard2(b Board) (int, int) {
+func dumpboard2(b Board, display bool) (int, int) {
 	_ = dirmap
-	display := true
+	// display := true
 	gps := 0
 
 	boxMap := map[[2]int]byte{}
@@ -86,22 +86,31 @@ func dumpboard2(b Board) (int, int) {
 			}
 
 			if b.obs[coordhalf] {
-				fmt.Print("#")
+				if display {
+					fmt.Print("#")
+				}
 				continue
 			}
 
 			if boxMap[coord] != byte(0) {
-				fmt.Print(string(boxMap[coord]))
+				if display {
+					fmt.Print(string(boxMap[coord]))
+				}
+				if boxMap[coord] == '[' {
+					gps += y*100 + x
+				}
 				continue
 			}
 
-			fmt.Print(".")
+			if display {
+				fmt.Print(".")
+			}
 		}
 		if display {
 			fmt.Println()
 		}
 	}
-	return gps, 0
+	return 0, gps
 }
 
 func intheway(b Board, coord1 [2]int, d [2]int, dwidth bool) (bool, []int) {
@@ -116,12 +125,12 @@ func intheway(b Board, coord1 [2]int, d [2]int, dwidth bool) (bool, []int) {
 	coordhalf3 := [2]int{coord1m2[0] / 2, coord1[1]}
 
 	if b.obs[coordhalf] {
-		fmt.Println("itw: obs")
+		// fmt.Println("itw: obs")
 		return true, []int{}
 	}
 	if dwidth {
 		if b.obs[coordhalf2] || b.obs[coordhalf3] {
-			fmt.Println("itw: obs dwidth")
+			// fmt.Println("itw: obs dwidth")
 			return true, []int{}
 		}
 	}
@@ -135,7 +144,7 @@ func intheway(b Board, coord1 [2]int, d [2]int, dwidth bool) (bool, []int) {
 			}
 		}
 	}
-	fmt.Println("itw", coord1, out)
+	// fmt.Println("itw", coord1, out)
 	return false, out
 }
 
@@ -241,11 +250,12 @@ func day15(file string) (part1, part2 int) {
 			b.robot = coord1
 			// fmt.Println("Move block O")
 		}
+		fmt.Println("Moves", moves)
 	b:
 		for m, move := range moves {
 			if true {
+				dumpboard2(b2, false)
 				fmt.Println("Part2", m, string(move))
-				dumpboard2(b2)
 			}
 			d := dirmap[byte(move)]
 
@@ -253,14 +263,14 @@ func day15(file string) (part1, part2 int) {
 			// Empty
 
 			// coord1m := [2]int{coord1[0] - 1, coord1[1]}
-			// coordhalf := [2]int{coord1[0] / 2, coord1[1]}
+			coordhalf := [2]int{coord1[0] / 2, coord1[1]}
 
 			// fmt.Println(coord1, coord1m, coordhalf)
-			// if b2.obs[coordhalf] {
-			// 	// blocked
-			// 	fmt.Println("Blocked", string(move))
-			// 	continue
-			// }
+			if b2.obs[coordhalf] {
+				// blocked
+				fmt.Println("Blocked", string(move))
+				continue
+			}
 
 			obstructed, itw := intheway(b2, b2.robot, d, false)
 			if !obstructed && len(itw) == 0 {
@@ -308,7 +318,9 @@ func day15(file string) (part1, part2 int) {
 
 		}
 	}
-	part1, part2 = dumpboard(b)
+	part1, _ = dumpboard(b)
+	_, part2 = dumpboard2(b2, true)
+	log.Println("Part2", part2, b2.robot)
 	return
 }
 
@@ -324,18 +336,23 @@ func main() {
 		defer pf.Close()
 	}
 	t1 := time.Now()
-	part1, part2 := day15("test3.txt")
-	fmt.Println(part1, part2)
-	if part1 != 2028+1 {
-		log.Fatal("Test failed ", part1, part2)
-	}
-	part1, part2 = day15("test2.txt")
+	// part1, part2 := day15("test.txt")
+	// fmt.Println(part1, part2)
+	// if part1 != 2028 {
+	// 	log.Fatal("Test failed ", part1, part2)
+	// }
+	// part1, part2 = day15("test3.txt")
+	// fmt.Println(part1, part2)
+	// if part1 != 908 {
+	// 	log.Fatal("Test failed ", part1, part2)
+	// }
+	part1, part2 := day15("test2.txt")
 	fmt.Println(part1, part2)
 	if part1 != 10092 || part2 != 9021 {
 		log.Fatal("Test failed ", part1, part2)
 	}
 	fmt.Println(day15("input.txt"))
-	// 7790
+	// too low: 1451343
 	if logperf {
 		pprof.StopCPUProfile()
 	}
