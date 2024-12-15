@@ -76,9 +76,9 @@ func dumpboard2(b Board) (int, int) {
 		for x := 0; x < b.maxx; x++ {
 			coord := [2]int{x, y}
 			coordhalf := [2]int{x / 2, y}
-			coordp1 := [2]int{x - 1, y}
+			// coordp1 := [2]int{x - 1, y}
 
-			if coord == b.robot || coordp1 == b.robot {
+			if coord == b.robot {
 				if display {
 					fmt.Print("@")
 				}
@@ -102,6 +102,41 @@ func dumpboard2(b Board) (int, int) {
 		}
 	}
 	return gps, 0
+}
+
+func intheway(b Board, coord1 [2]int, d [2]int, dwidth bool) (bool, []int) {
+	out := []int{}
+
+	coord1 = [2]int{coord1[0] + d[0], coord1[1] + d[1]}
+	coord1m := [2]int{coord1[0] - 1, coord1[1]}
+	coord1m2 := [2]int{coord1[0] + 1, coord1[1]}
+
+	coordhalf := [2]int{coord1[0] / 2, coord1[1]}
+	coordhalf2 := [2]int{coord1m[0] / 2, coord1[1]}
+	coordhalf3 := [2]int{coord1m2[0] / 2, coord1[1]}
+
+	if b.obs[coordhalf] {
+		fmt.Println("itw: obs")
+		return true, []int{}
+	}
+	if dwidth {
+		if b.obs[coordhalf2] || b.obs[coordhalf3] {
+			fmt.Println("itw: obs dwidth")
+			return true, []int{}
+		}
+	}
+
+	for k, v := range b.boxes {
+		if v == coord1 || v == coord1m {
+			out = append(out, k)
+		} else if dwidth {
+			if v == coord1m2 {
+				out = append(out, k)
+			}
+		}
+	}
+	fmt.Println("itw", coord1, out)
+	return false, out
 }
 
 func day15(file string) (part1, part2 int) {
@@ -198,45 +233,79 @@ func day15(file string) (part1, part2 int) {
 			}
 			if b.board[r1] == '#' {
 				// Can't move.
-				fmt.Println("Can't move O")
+				// fmt.Println("Can't move O")
 				continue a
 			}
 			b.board[r1] = 'O'
 			delete(b.board, l1)
 			b.robot = coord1
-			fmt.Println("Move block O")
+			// fmt.Println("Move block O")
 		}
 	b:
 		for m, move := range moves {
 			if true {
-				fmt.Println(m)
+				fmt.Println("Part2", m, string(move))
 				dumpboard2(b2)
 			}
 			d := dirmap[byte(move)]
 
-			coord1 := [2]int{b.robot[0] + d[0], b.robot[1] + d[1]}
+			coord1 := [2]int{b2.robot[0] + d[0], b2.robot[1] + d[1]}
 			// Empty
 
-			coord1m := [2]int{coord1[0] - 1, coord1[1]}
-			coordhalf := [2]int{coord1[0] / 2, coord1[1]}
+			// coord1m := [2]int{coord1[0] - 1, coord1[1]}
+			// coordhalf := [2]int{coord1[0] / 2, coord1[1]}
 
-			if b.obs[coordhalf] {
-				// blocked
-				fmt.Println("Blocked", string(move))
-				continue
-			}
+			// fmt.Println(coord1, coord1m, coordhalf)
+			// if b2.obs[coordhalf] {
+			// 	// blocked
+			// 	fmt.Println("Blocked", string(move))
+			// 	continue
+			// }
 
-			intheway := []int{}
-			for k, v := range b.boxes {
-				if v == coord1 || v == coord1m {
-					intheway = append(intheway, k)
-				}
-			}
-			if len(intheway) == 0 {
-				fmt.Println("no blockj", string(move))
+			obstructed, itw := intheway(b2, b2.robot, d, false)
+			if !obstructed && len(itw) == 0 {
+				fmt.Println("no block", string(move))
 				b2.robot = coord1
 				continue b
 			}
+			fmt.Println("Blocked by boxes", itw, obstructed)
+
+			boxes := map[int]bool{}
+			for _, k := range itw {
+				boxes[k] = true
+			}
+		c:
+			for _, box := range itw {
+				obstructed, itw = intheway(b2, b2.boxes[box], d, true)
+				if obstructed {
+					fmt.Println("Can't move boxes", string(move))
+					continue b
+				}
+				if len(itw) == 0 {
+					// Ok, move the boxes
+					continue c
+				} else {
+					// More boxes in the way
+					itw2 := []int{}
+					for _, k := range itw {
+						if !boxes[k] {
+							boxes[k] = true
+							itw2 = append(itw2, k)
+						}
+					}
+					// itw = []int{}
+					itw = itw2
+					fmt.Println("Again", boxes)
+					goto c // again
+				}
+			}
+			fmt.Println("Moving boxes", boxes)
+			for k := range boxes {
+				b2.boxes[k][0] += d[0]
+				b2.boxes[k][1] += d[1]
+			}
+			b2.robot = coord1
+
 		}
 	}
 	part1, part2 = dumpboard(b)
