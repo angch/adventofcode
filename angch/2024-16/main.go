@@ -106,6 +106,8 @@ func day16(file string) (part1, part2 int) {
 	eval := []Moves{moves}
 	evals := 0
 	bestScore := -1
+	bestMoves := [][2]int{}
+	bestScoreMap := map[[2]int][]int{}
 	t2 := time.Now()
 	done := map[[2]int]int{}
 	for len(eval) > 0 {
@@ -134,7 +136,15 @@ func day16(file string) (part1, part2 int) {
 		if moves.move[len(moves.move)-1] == end {
 			if bestScore == -1 || moves.score < bestScore {
 				bestScore = moves.score
-				log.Fatal("best score", bestScore)
+				bestMoves = moves.move
+				log.Println("Best score", moves.score, len(eval))
+			} else {
+				if moves.score == bestScore {
+					log.Println("Found another best score", moves.score, len(eval))
+					bestMoves = append(bestMoves, moves.move...)
+				} else {
+					continue
+				}
 			}
 			continue
 		}
@@ -151,17 +161,7 @@ func day16(file string) (part1, part2 int) {
 				continue
 			}
 
-			if olddir, ok := done[newPos]; ok {
-				if olddir&(1<<dirIndex) > 0 {
-					continue
-				}
-			}
-
-			if olddir, ok := moves.movemap[newPos]; ok {
-				if olddir == dirIndex {
-					continue
-				}
-				// _ = olddir
+			if _, ok := moves.movemap[newPos]; ok {
 				continue
 			}
 
@@ -172,6 +172,25 @@ func day16(file string) (part1, part2 int) {
 				addScore += 2000
 			}
 			// fmt.Println("Facing is ", facing, "dirIndex is", dirIndex, "addScore is", addScore)
+
+			// This check kills part 2:
+			if false {
+				_, ok := bestScoreMap[newPos]
+				if !ok {
+					bestScoreMap[newPos] = make([]int, 4)
+				}
+				score := bestScoreMap[newPos][dirIndex]
+				if score > moves.score+addScore {
+					continue
+				}
+				bestScoreMap[newPos][dirIndex] = moves.score + addScore
+
+				// if olddir, ok := done[newPos]; ok {
+				// 	if olddir&(1<<dirIndex) > 0 {
+				// 		continue
+				// 	}
+				// }
+			}
 
 			cloneMap := make(map[[2]int]int)
 			for k, v := range moves.movemap {
@@ -197,8 +216,15 @@ func day16(file string) (part1, part2 int) {
 			})
 		}
 	}
-	log.Println("no more moves", evals)
+	// log.Println("no more moves", evals)
 	part1 = bestScore
+	// log.Println(bestMoves)
+
+	seen := map[[2]int]bool{}
+	for _, m := range bestMoves {
+		seen[m] = true
+	}
+	part2 = len(seen)
 
 	return
 }
@@ -206,12 +232,17 @@ func day16(file string) (part1, part2 int) {
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	t1 := time.Now()
-	// part1, part2 := day16("test.txt")
-	// fmt.Println(part1, part2)
-	// if part1 != 7036 || part2 != 0 {
-	// 	log.Fatal("Test failed ", part1, part2)
-	// }
-	// 7036 too low
+	part1, part2 := day16("test.txt")
+	fmt.Println(part1, part2)
+	if part1 != 7036 || part2 != 45 {
+		log.Fatal("Test failed ", part1, part2)
+	}
+	part1, part2 = day16("test2.txt")
+	fmt.Println(part1, part2)
+	if part1 != 11048 || part2 != 64 {
+		log.Fatal("Test failed ", part1, part2)
+	}
+	// part2: 511 too high
 	fmt.Println(day16("input.txt"))
 	fmt.Println("Elapsed time:", time.Since(t1))
 }
