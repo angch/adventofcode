@@ -79,7 +79,7 @@ func main() {
 		left = ops[0]
 		dest = ops[1]
 		// fmt.Println(left, right)
-		num, err := strconv.Atoi(left)
+		num, err := strconv.ParseUint(left, 10, 16)
 		if err == nil {
 			// 123 -> x
 			wirings[dest] = Wiring{
