@@ -83,4 +83,27 @@ compress:
 	return s
 }
 
+func (s Spans[T]) Contains(i int) bool {
+	// binary search
+	l, r := 0, len(s)
+	for l < r {
+		mid := l + (r-l)/2
+
+		if mid >= len(s) {
+			return false
+		}
+
+		diff := s[mid].From - i
+		if diff <= 0 && s[mid].To >= i {
+			return true
+		}
+		if diff <= 0 {
+			l = mid + 1
+		} else {
+			r = mid
+		}
+	}
+	return false
+}
+
 // Initial conversion from 2022-15 code to type param'd Spans
