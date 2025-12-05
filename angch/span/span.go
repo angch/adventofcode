@@ -18,6 +18,8 @@ func (s Spans[T]) Add(from, to int, content T) Spans[T] {
 	return newspan
 }
 
+// AddCompress add a new span, sort and compress existing one and returns a *new*
+// Spans[T]. Make sure you assign or reassign the new Spans. Can't help it, generics
 func (s Spans[T]) AddCompress(from, to int, content T) Spans[T] {
 	// FIXME, this func hasn't been fixed to make sure content is the same before merging
 	from, to = min(from, to), max(from, to)

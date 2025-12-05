@@ -1,6 +1,7 @@
 package span
 
 import (
+	"log"
 	"reflect"
 	"testing"
 )
@@ -44,6 +45,39 @@ func TestAddInt(t *testing.T) {
 			got := s.AddCompress(tt.args.From, tt.args.To, tt.args.Content)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewSpan() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSpans_Contains(t *testing.T) {
+
+	// Test spans based on AoC 2025-05
+	spans := NewSpans[bool]()
+	spans = spans.AddCompress(3, 5, true)
+	spans = spans.AddCompress(10, 14, true)
+	spans = spans.AddCompress(16, 20, true)
+	spans = spans.AddCompress(12, 18, true)
+
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		i    int
+		want bool
+	}{
+		{"1", 1, false},
+		{"5", 5, true},
+		{"8", 8, false},
+		{"11", 11, true},
+		{"17", 17, true},
+		{"32", 32, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			log.Println(spans)
+			got := spans.Contains(tt.i)
+			if got != tt.want {
+				t.Errorf("Contains() = %v, want %v", got, tt.want)
 			}
 		})
 	}
