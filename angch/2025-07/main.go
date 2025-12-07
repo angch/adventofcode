@@ -16,45 +16,30 @@ func day7(file string) (part1, part2 int) {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 
-	scanner.Scan()
-	t := scanner.Bytes()
-	beams := map[int]int{}
-	for x, c := range t {
-		if c == 'S' {
-			beams[x] = 1
-		}
-	}
-
-	part2 = 1
+	var beams []int
 	for scanner.Scan() {
 		t := scanner.Bytes()
-		rest := 0
 		for x, c := range t {
+			if c == 'S' {
+				beams = make([]int, len(t))
+				beams[x] = 1
+				break
+			}
 			if c == '^' && beams[x] > 0 {
-				split := 0
 				if x > 0 {
 					beams[x-1] += beams[x]
-					split += beams[x]
 				}
 				if x < len(t) {
 					beams[x+1] += beams[x]
-					split += beams[x]
 				}
-				delete(beams, x)
-				rest++
+				beams[x] = 0
 				part1++
 			}
 		}
-		if rest == 0 {
-			sum := 0
-			for _, i := range beams {
-				sum += i
-			}
-			// fmt.Println(beams, len(beams), sum)
-			part2 = sum
-		}
 	}
-
+	for _, i := range beams {
+		part2 += i
+	}
 	return
 }
 
