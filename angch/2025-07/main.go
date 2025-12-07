@@ -26,13 +26,9 @@ func day7(file string) (part1, part2 int) {
 				break
 			}
 			if c == '^' && beams[x] > 0 {
-				if x > 0 {
-					beams[x-1] += beams[x]
-				}
-				if x < len(t) {
-					beams[x+1] += beams[x]
-				}
-				beams[x] = 0
+				// Looks cleaner like this, splitting the beams[x]:
+				beams[x-1], beams[x], beams[x+1] =
+					beams[x-1]+beams[x], 0, beams[x+1]+beams[x]
 				part1++
 			}
 		}
