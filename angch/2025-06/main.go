@@ -10,6 +10,24 @@ import (
 	"time"
 )
 
+func doOp(row []int, op string) int {
+	switch op {
+	case "*":
+		out := 1
+		for _, v := range row {
+			out *= v
+		}
+		return out
+	case "+":
+		out := 0
+		for _, v := range row {
+			out += v
+		}
+		return out
+	}
+	return 0
+}
+
 func day6(file string) (part1, part2 int) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -19,11 +37,6 @@ func day6(file string) (part1, part2 int) {
 	scanner := bufio.NewScanner(f)
 
 	cells := [][]int{}
-	cells2 := [][]int{}
-
-	// ops := map[byte]bool{
-	// 	'*':true, '+':true,
-	// }
 	ops := []string{}
 	grid := [][]byte{}
 	for scanner.Scan() {
@@ -61,29 +74,14 @@ func day6(file string) (part1, part2 int) {
 	opCount := len(ops) - 1
 a:
 	for y := len(grid[0]) - 1; y >= 0; y-- {
-		s := ""
+		i := 0
 		for x := range len(grid) - 1 {
 			if grid[x][y] != ' ' {
-				s += string(grid[x][y])
+				i = i*10 + int(grid[x][y]-'0')
 			}
 		}
-		i, _ := strconv.Atoi(s)
 		if i == 0 {
-			if ops[opCount] == "*" {
-				out := 1
-				for _, j := range row2 {
-					out *= j
-				}
-				// fmt.Println("part2", out)
-				part2 += out
-			} else {
-				out := 0
-				for _, j := range row2 {
-					out += j
-				}
-				// fmt.Println("part2", out)
-				part2 += out
-			}
+			part2 += doOp(row2, ops[opCount])
 			row2 = []int{}
 			opCount--
 			if opCount < 0 {
@@ -93,25 +91,7 @@ a:
 			row2 = append(row2, i)
 		}
 	}
-	if ops[opCount] == "*" {
-		out := 1
-		for _, j := range row2 {
-			out *= j
-		}
-		// fmt.Println("part2", out)
-		part2 += out
-	} else {
-		out := 0
-		for _, j := range row2 {
-			out += j
-		}
-		// fmt.Println("part2", out)
-		part2 += out
-	}
-	_ = cells2
-
-	// log.Printf("cells %+v\n", cells)
-	// log.Printf("%#v\n", grid)
+	part2 += doOp(row2, ops[opCount])
 
 	for col, op := range ops {
 		a := 0
@@ -119,14 +99,12 @@ a:
 			a = 1
 		}
 		for i := range cells {
-			// log.Println(i, col, cells[i][col])
 			if op == "*" {
 				a *= cells[i][col]
 			} else {
 				a += cells[i][col]
 			}
 		}
-		// fmt.Println(a)
 		part1 += a
 	}
 
