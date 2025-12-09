@@ -10,16 +10,11 @@ import (
 	"time"
 )
 
-func dist(a, b [3]int) float64 {
+// dist doesn't need actual dist, just enough for sorting
+func dist(a, b [3]int) int {
 	x1, y1, z1 := a[0]-b[0], a[1]-b[1], a[2]-b[2]
 	x1, y1, z1 = x1*x1, y1*y1, z1*z1
-	return float64(x1 + y1 + z1)
-	// z := math.Sqrt(float64(x1 + y1 + z1))
-	// if math.IsNaN(z) {
-	// 	log.Fatal("nan!", a, b, x1)
-	// }
-	// return z
-
+	return x1 + y1 + z1
 }
 
 func day8(file string) (part1, part2 int) {
@@ -46,7 +41,7 @@ func day8(file string) (part1, part2 int) {
 	type pairDist struct {
 		p1 int
 		p2 int
-		d  float64
+		d  int
 	}
 	shortest := []pairDist{}
 
@@ -56,6 +51,7 @@ func day8(file string) (part1, part2 int) {
 	}
 	shortEntries := maxConn * 5
 
+	t1 := time.Now()
 	for k1, v1 := range points {
 		for k2 := k1 + 1; k2 < len(points); k2++ {
 			v2 := points[k2]
@@ -84,6 +80,7 @@ func day8(file string) (part1, part2 int) {
 			}
 		}
 	}
+	t2 := time.Now()
 
 	// fmt.Printf("%+v\n", shortest)
 	// log.Fatal("a")
@@ -149,15 +146,16 @@ func day8(file string) (part1, part2 int) {
 			}
 		}
 
-		if nonzero == 1 {
+		if nonzero == 1 && len(pointInCircuit) == len(points) {
 			// fmt.Println("Found", len(pointInCircuit), len(points))
-			if len(pointInCircuit) == len(points) {
-				part2 = points[pd.p1][0] * points[pd.p2][0]
-				break
-			}
+			part2 = points[pd.p1][0] * points[pd.p2][0]
+			break
 		}
 
 	}
+
+	t3 := time.Now()
+	fmt.Println("Time", t2.Sub(t1), t3.Sub(t2))
 	// log.Printf("circuits %+v %v\n", circuits, len(circuits[0]))
 	return
 }
