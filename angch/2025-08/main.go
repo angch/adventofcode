@@ -2,13 +2,53 @@ package main
 
 import (
 	"bufio"
+	"container/heap"
 	"fmt"
 	"log"
 	"os"
-	"slices"
 	"sort"
 	"time"
 )
+
+type pairDist struct {
+	p1    int
+	p2    int
+	d     int
+	index int
+}
+
+// A PriorityQueue implements heap.Interface and holds Items.
+type PriorityQueue []*pairDist
+
+func (pq PriorityQueue) Len() int { return len(pq) }
+
+func (pq PriorityQueue) Less(i, j int) bool {
+	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
+	return pq[i].d < pq[j].d
+}
+
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+	pq[i].index = i
+	pq[j].index = j
+}
+
+func (pq *PriorityQueue) Push(x any) {
+	n := len(*pq)
+	item := x.(*pairDist)
+	item.index = n
+	*pq = append(*pq, item)
+}
+
+func (pq *PriorityQueue) Pop() any {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	old[n-1] = nil  // don't stop the GC from reclaiming the item eventually
+	item.index = -1 // for safety
+	*pq = old[0 : n-1]
+	return item
+}
 
 // dist doesn't need actual dist, just enough for sorting
 func dist(a, b [3]int) int {
@@ -28,7 +68,6 @@ func day8(file string) (part1, part2 int) {
 	points := [][3]int{}
 	circuits := [][]int{}
 	pointInCircuit := map[int]int{}
-	_ = circuits
 
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -36,59 +75,29 @@ func day8(file string) (part1, part2 int) {
 		fmt.Sscanf(t, "%d,%d,%d", &x, &y, &z)
 		points = append(points, [3]int{x, y, z})
 	}
-	// log.Printf("%+v\n", points)
-
-	type pairDist struct {
-		p1 int
-		p2 int
-		d  int
-	}
-	shortest := []pairDist{}
+	shortest := make(PriorityQueue, 0, len(points)*(len(points)))
+	heap.Init(&shortest)
 
 	maxConn := len(points)
 	if maxConn == 20 {
 		maxConn = 10 // the test is shorter than full run
 	}
-	shortEntries := maxConn * 5
 
 	t1 := time.Now()
 	for k1, v1 := range points {
 		for k2 := k1 + 1; k2 < len(points); k2++ {
 			v2 := points[k2]
-
-			dist1 := dist(v1, v2)
-			if len(shortest) == shortEntries {
-				if dist1 > shortest[len(shortest)-1].d {
-					continue
-				}
-			}
-
-			pd := pairDist{k1, k2, dist1}
-			shortest = append(shortest, pd)
-			slices.SortFunc(shortest, func(a, b pairDist) int {
-				if a.d > b.d {
-					return 1
-				}
-				if a.d < b.d {
-					return -1
-				}
-				return 0
-			})
-
-			if len(shortest) > shortEntries {
-				shortest = shortest[:shortEntries]
-			}
+			pd := pairDist{k1, k2, dist(v1, v2), 0}
+			heap.Push(&shortest, &pd)
 		}
 	}
 	t2 := time.Now()
 
-	// fmt.Printf("%+v\n", shortest)
-	// log.Fatal("a")
 	count := 0
-	for k, pd := range shortest {
-		// log.Printf("%d %d %d %f %+v\n", k, pd.p1, pd.p2, pd.d, pointInCircuit)
-
-		// log.Printf("%d/%d: b4 %+v %+v %+v\n", k, count, circuits, pointInCircuit, len(points)-len(pointInCircuit))
+	k := -1
+	for {
+		k++
+		pd := heap.Pop(&shortest).(*pairDist)
 		if k == maxConn {
 			lens := []int{}
 			for _, v := range circuits {
@@ -103,10 +112,8 @@ func day8(file string) (part1, part2 int) {
 
 		if pointInCircuit[pd.p1] > 0 && pointInCircuit[pd.p2] > 0 &&
 			pointInCircuit[pd.p1] == pointInCircuit[pd.p2] {
-			// fmt.Println("Same circuit", points[pd.p1], points[pd.p2])
+			// Already in, do nothing
 		} else if pointInCircuit[pd.p1] > 0 && pointInCircuit[pd.p2] > 0 {
-			// log.Fatal("Combine!")
-
 			nc := pointInCircuit[pd.p1] - 1
 			nc2 := pointInCircuit[pd.p2] - 1
 			circuits[nc] = append(circuits[nc], circuits[nc2]...)
@@ -115,7 +122,6 @@ func day8(file string) (part1, part2 int) {
 				pointInCircuit[v2] = nc + 1
 			}
 			circuits[nc2] = []int{}
-
 			count++
 		} else if pointInCircuit[pd.p1] > 0 {
 			nc := pointInCircuit[pd.p1] - 1
@@ -151,12 +157,10 @@ func day8(file string) (part1, part2 int) {
 			part2 = points[pd.p1][0] * points[pd.p2][0]
 			break
 		}
-
 	}
 
 	t3 := time.Now()
 	fmt.Println("Time", t2.Sub(t1), t3.Sub(t2))
-	// log.Printf("circuits %+v %v\n", circuits, len(circuits[0]))
 	return
 }
 
